@@ -21,10 +21,10 @@ Proofs for Phases 6, 7, 8 and 10 were re-run on 2026-09-21; the Docker (Phase 7)
 | 8 CI/CD | 5 | 1 | 0 | 6 |
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
-| Capstone (rubric 9 + checklist 8) | 0 | 0 | 17 | 17 |
-| **Total** | **58** | **6** | **31** | **95** |
+| Capstone (rubric 9 + checklist 8) | 13 | 1 | 3 | 17 |
+| **Total** | **71** | **7** | **17** | **95** |
 
-Row check: 58 + 6 + 31 = 95; every row's three columns add up to its total.
+Row check: 71 + 7 + 17 = 95; every row's three columns add up to its total.
 
 ## Phase 0 — Foundations & Setup (7)
 - [x] I can navigate, create files, and use a pipe in the terminal without looking anything up — self-assessed by the developer (2026-09-22); also shown in practice: pipe lab `ls lab0/*.txt | wc -l` → `3`
@@ -128,22 +128,22 @@ Row check: 58 + 6 + 31 = 95; every row's three columns add up to its total.
 
 ## Capstone (17)
 Mentor rubric (9):
-- [ ] Every code change traces back to an approved story — nothing shipped that nobody asked for
-- [ ] The design doc argues real alternatives (day_part vs boolean) and commits to one with reasons
-- [ ] The migration is reversible-aware: a written down-path, or an explicit note on why rollback means restore
-- [ ] Day-math tests cover the edges: holidays inside ranges, weekends, half day on a boundary day, cancel refunds 0.5
-- [ ] The PR is a reviewable size with a description that explains what, why, and how to test it
-- [ ] CI green on the first push — or red diagnosed and fixed fast, without commenting tests out
-- [ ] Deployed through the pipeline with no hand-edits on the server or in the database
-- [ ] Scope held: the agreed stories shipped, stretch ideas parked in the backlog instead of smuggled in
-- [ ] The demo survives at least one unrehearsed question with a live answer (or an honest "I'd check X")
+- [x] Every code change traces back to an approved story — nothing shipped that nobody asked for — stories US-17…US-21 approved first (#52); every build PR names its stories (#55 US-17/18/20, #56 US-19/20, #57 US-17/18/20/21, #58 US-17/18/21, #59 acceptance lines 1 and 6); `docs/capstone/retro.md` line 1
+- [x] The design doc argues real alternatives (day_part vs boolean) and commits to one with reasons — `docs/capstone/design.md` §2 comparison (which half, multi-day, balance math, overlap, API shape) + rejected `start_part`/`end_part`; ADR-10 (#53)
+- [x] The migration is reversible-aware: a written down-path, or an explicit note on why rollback means restore — `server/src/db/down/006_half_day_and_holidays.down.sql`; fresh database: up → down → up OK, and down refuses once a half day exists ("restore from backup or fix forward instead"); design §5 (#56)
+- [x] Day-math tests cover the edges: holidays inside ranges, weekends, half day on a boundary day, cancel refunds 0.5 — `server/tests/dayMath.test.js` (22): Vesak inside a range = 3, weekend + Medin poya = 2, half day on a poya = 0, PM half day on the last day of a range = 2.5, pending half day reserves 0.5 and cancel refunds 0.5 (#55)
+- [x] The PR is a reviewable size with a description that explains what, why, and how to test it — 8 Capstone PRs #52–#59 (+16 to +428 lines; the largest are the API and UI with their tests), each with What / Why / How to test
+- [x] CI green on the first push — or red diagnosed and fixed fast, without commenting tests out — each of #52–#59 and #66 has exactly one CI run, green; tests that imported the removed `holidays.js` were moved onto the table, not commented out (#56)
+- [ ] Deployed through the pipeline with no hand-edits on the server or in the database — not deployed: no staging or production (Phase 9). Demo data comes only from migrations; merges publish the image to GHCR
+- [x] Scope held: the agreed stories shipped, stretch ideas parked in the backlog instead of smuggled in — parked as issues #60–#65 (half day at the start of a trip, shutdown week, employee holiday view, holiday-aware preview, audit log, displayed vs charged days); #7 team calendar and #8 email untouched
+- [x] The demo survives at least one unrehearsed question with a live answer (or an honest "I'd check X") — a reviewer subagent that had not seen the script asked about a PM half day on a newly added holiday; answered with a live run (refund 0.5, `day_part` stays PM) and pinned by a regression test; `docs/capstone/demo-script.md` (#66)
 
 Before you move on (8):
-- [ ] Stories + acceptance criteria for both features written and approved by the mentor-as-customer
-- [ ] Mini design doc argues day_part vs half_day boolean, designs public_holidays, and diffs the API contract
-- [ ] Migration applied cleanly on a fresh database and on staging
-- [ ] Day-math unit tests written before the implementation; API tests and one E2E flow updated — all green
-- [ ] PR(s) reviewed and merged; CI green; main stayed deployable throughout
-- [ ] Feature live in production via the pipeline, with seed data ready for the demo
-- [ ] 15-minute demo delivered against the 2/8/5 structure, logs open, at least one unrehearsed question answered
-- [ ] 30-minute retro with your mentor: rubric walked through line by line, one thing you'd do differently written down
+- [x] Stories + acceptance criteria for both features written and approved by the mentor-as-customer — `docs/capstone/stories.md` US-17…US-21; Nadeesha role-played by a subagent given only her email and the requirements: round 1 changes requested (4), round 2 approved (#52) — no human reviewer; self-reviewed
+- [x] Mini design doc argues day_part vs half_day boolean, designs public_holidays, and diffs the API contract — `docs/capstone/design.md` §2 (argument), §4 (`holiday_date` PK, generated `year`), §6 (contract diff), §7 (Mermaid ERD) (#53)
+- [ ] Migration applied cleanly on a fresh database and on staging — fresh database **done** (001–006 in 526 ms, second run no-op, down/up tested, #56); **staging not done** (no staging)
+- [x] Day-math unit tests written before the implementation; API tests and one E2E flow updated — all green — tests-first commit `a7baeb4` (red) before the implementation (#55); Supertest `halfDay.test.js` 16 + `holidaysApi.test.js` 11 + `holidaysTable.test.js` 7; Playwright flow books a Friday-afternoon half day (#59); Jest 110/110, Vitest 35/35, Playwright 3/3
+- [x] PR(s) reviewed and merged; CI green; main stayed deployable throughout — #52–#59, #66 merged only after lint, test-api and test-client passed; `main` green after every merge (CI and Release) — no human reviewer; self-reviewed
+- [ ] Feature live in production via the pipeline, with seed data ready for the demo — not done: no production. Seed data for the demo is ready (migrations 001–006)
+- [~] 15-minute demo delivered against the 2/8/5 structure, logs open, at least one unrehearsed question answered — **done differently (no live audience):** `docs/capstone/demo-script.md` (2/8/5, 13 steps covering every acceptance line) rehearsed twice against freshly seeded data through the API with the pino logs captured (request ids, `authorization: [Redacted]`), identical numbers both runs; one unrehearsed question answered live
+- [x] 30-minute retro with your mentor: rubric walked through line by line, one thing you'd do differently written down — `docs/capstone/retro.md`: 9 rubric lines with evidence (8 met, "deployed through the pipeline" not met) and one thing to do differently (store charged days before building re-credit) — no human reviewer; self-reviewed

@@ -1,8 +1,8 @@
 # LeaveFlow
 
 Leave management for Ceylon Roots (Pvt) Ltd, a demo internship project built by following the *LeaveFlow Field Guide*.
-Employees apply for leave and see their balances; managers approve or reject their team's requests and see who else
-is off that week; HR sees and exports every request.
+Employees apply for leave (full days or a morning/afternoon half day) and see their balances; managers approve or reject their team's requests and see who else
+is off that week; HR sees and exports every request and maintains the public-holiday calendar, which is never charged against anyone's balance.
 
 **Stack:** React 18 + Vite (client) · Node 24 + Express 5 (API) · PostgreSQL 16 · Docker Compose · GitHub Actions.
 Everything in this repo is demo data.
@@ -46,7 +46,7 @@ Password for all: `password123`
 | ishara@ceylonroots.lk | EMPLOYEE | reports to Ruwan |
 | kasun@ceylonroots.lk | EMPLOYEE | reports to Ruwan |
 | ruwan@ceylonroots.lk | MANAGER | approves Ishara and Kasun |
-| dilini@ceylonroots.lk | HR_ADMIN | sees and approves everyone, exports CSV |
+| dilini@ceylonroots.lk | HR_ADMIN | sees and approves everyone, exports CSV, manages public holidays |
 
 ## Run the tests
 

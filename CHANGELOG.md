@@ -65,7 +65,21 @@ staging or production environment.
 - #42 (17:09) Approvals: balance after approval, newest first, history (closes #37).
 - #43 (17:12) Apply form: "Submit request" and Cancel (closes #38).
 
+## Capstone — half-day leave and public holidays (2026-09-21 UTC, 2026-09-22 Sri Lanka time)
+
+- #52 (18:54) Stories US-17…US-21 with acceptance criteria, approved by Nadeesha (subagent) after two rounds.
+- #53 (18:56) Mini design doc: `day_part` vs boolean, `public_holidays` (date as key), down path, API diff, ERD; ADR-10.
+- #54 (18:58) Wireframes: half-day Apply form and HR holidays (SVG + PNG).
+- #55 (19:03) Day math with half days, reserved/remaining, half-day overlap: tests committed first (red), then the code.
+- #56 (19:07) Migration 006: `day_part`, `public_holidays` seeded with the 25 holidays of 2026; `holidays.js` reads the table; written down path.
+- #57 (19:14) API: `day_part` on requests (Annual/Casual only), holiday named in refusals, AM+PM on one date, HR `/holidays` with re-credit on add.
+- #58 (19:21) UI: Full day / Morning / Afternoon, AM/PM badges and half-day dates, HR Holidays screen.
+- #59 (19:24) Playwright flow books a Friday-afternoon half day.
+- #66 (19:33) Demo script (rehearsed twice), unrehearsed question answered live with a regression test, retro.
+- Stretch ideas parked as issues #60–#65.
+
 ## Records
 
-- #18 (07:14), #24 (07:45), #25 (08:10), #29 (10:15), #44 (17:16), #45 (17:49) — `docs/PROGRESS.md` and
+- #18 (07:14), #24 (07:45), #25 (08:10), #29 (10:15), #44 (17:16), #45 (17:49), #51 (18:37) — `docs/PROGRESS.md` and
   `docs/STATUS.md` updates with proof.
+- #50 (18:35) Project docs: README, CHANGELOG, decision log, docs and bug-report indexes.

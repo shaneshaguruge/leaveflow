@@ -1,7 +1,7 @@
 # LeaveFlow — Status
 
 **Last updated:** 2026-09-21 · **Stopped at:** paper wireframes committed (PR #33) and the five wireframe gaps closed (PRs #39–#43); `main` = `11ee499`, CI and Release green. Not deployed anywhere (no staging, no prod).
-Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **58 done · 6 done differently · 31 not done**.
+Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **71 done · 7 done differently · 17 not done**.
 **How reviewer items are ticked:** there is no human reviewer on this project; items that need a review are ticked when the work is done — no human reviewer; self-reviewed.
 
 | Phase | Done | Done differently | Not done | Total |
@@ -17,8 +17,8 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 | 8 CI/CD | 5 | 1 | 0 | 6 |
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
-| Capstone (rubric 9 + checklist 8) | 0 | 0 | 17 | 17 |
-| **Total** | **58** | **6** | **31** | **95** |
+| Capstone (rubric 9 + checklist 8) | 13 | 1 | 3 | 17 |
+| **Total** | **71** | **7** | **17** | **95** |
 
 ## Completed
 - Phase 0: Git 2.53.0 configured (`shaneshaguruge` / `shanesha@arozentech.com`, `main`, `autocrlf=input`); Node v24.14.0; npm 11.19.1; VS Code + 4 extensions; `gh` logged in.
@@ -64,6 +64,13 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 
 - Phase 0 terminal self-assessment and Phase 8 "why npm ci" ticked 2026-09-22 on the developer's own answers (npm ci = exact lockfile versions, reproducible builds; disposable runners = clean start).
 
+- **Capstone — half-day leave and public holidays (2026-09-22):**
+  - Stories approved by Nadeesha (subagent, 2 rounds, #52); design with ADR-10 (#53); wireframes (#54).
+  - Day math tests first (#55); migration 006 with a tested down path and the 2026 holidays in `public_holidays` (#56).
+  - API with `day_part` and HR `/holidays` including re-credit (#57); UI with the half-day choice, AM/PM and the HR Holidays screen (#58); Playwright half-day flow (#59).
+  - Demo rehearsed twice, unrehearsed question answered live, retro (#66). Jest 110/110, Vitest 35/35, Playwright 3/3.
+  - Stretch parked: #60–#65. Capstone reviewer items ticked with "no human reviewer; self-reviewed"; the demo is "done differently" (no live audience).
+
 ## Skipped or blocked, and why
 - Phase 0 `ssh -T git@github.com`: not reached — key generated, not added to GitHub; HTTPS via `gh` used instead.
 - Phase 6 manual execution of TC-01…TC-05: not reached — written, marked "not run yet".
@@ -72,7 +79,7 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Phase 10 CloudWatch alarm, SNS, snapshot restore drill: needs AWS account and a paid resource.
 - Phase 10 staged incident: not done — no incident has been staged.
 - Phase 10 overlap feature: staging demo and prod release not done — no deployment exists (Phase 9).
-- Capstone: not reached.
+- Capstone: deploy, staging and production items open (no environment; Phase 9).
 
 ## Still to do, and who
 - Phase 0 — [me] add the SSH key to GitHub (optional).
@@ -83,12 +90,13 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Phase 7 — [me] log in once in the browser at http://localhost:8080 to complete the new-machine item.
 - Phase 9 — [me] Render/AWS accounts with a $10 budget alarm first, then `deploy-render.md` / `deploy-aws.md`; execute the teardown checklist.
 - Phase 10 — [me] CloudWatch 5xx alarm, restore drill, ship US-16 to staging then prod (after Phase 9) and reply to Nadeesha with the live link; [me] ask Nadeesha whether overlapping leave should also *warn* or *block*; [me] staged incident.
-- Capstone — [me] half-day leave + holiday calendar.
+- Capstone — [me] once Phase 9 exists: run migration 006 on staging, demo there, then promote to production.
 
 ## Known issues
 - Docker Desktop crashed on start: `starting services: initializing Inference manager: listening on unix://<HOME>\AppData\Local\Docker\run\dockerInference: remove …: The file cannot be accessed by the system.` Fixed by the user on 2026-09-21; a leftover folder `%LOCALAPPDATA%\Docker\run.stale-20260921` with two stale socket files remains.
 - Running `npm ci` in `server/` while `npm run db` is running fails (EPERM on the Postgres binaries in `node_modules/@embedded-postgres`); stop the DB first or use `npm install`.
-- `server/src/lib/holidays.js`: 2026-05-02 marked `TODO verify`; only 2026 is loaded.
-- The apply form's live "= N working days" line and the My requests list count weekends only; the server also excludes holidays and is the authority (the HR and Approvals pages now show the server count).
+- `public_holidays`: the 25 seeded 2026 dates are "to confirm against the official gazette" (HR confirms in the Holidays screen); only 2026 is entered.
+- The apply form's live "= N working days" preview skips weekends and the half day but not holidays (it can't read the HR-only holiday list); the server's count is authoritative and every list shows it (#63).
+- For an approved request, the displayed `days` is recomputed from the current holiday list; after HR deletes a holiday it can differ from the days actually charged (#65).
 - HR_ADMIN can approve their own leave (design risk R5) — policy question for Nadeesha.
 - CI annotation: `The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026.`

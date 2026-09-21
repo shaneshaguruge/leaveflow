@@ -11,8 +11,8 @@ Keep the API terminal visible the whole time: it prints the pino JSON logs (requ
   seed is migrations 001–006: users, balances, requests, Kasun's approved 16–18 Nov, and the 2026 holidays. Nothing is
   inserted by hand.
 - Start `npm run dev` in `server/` (logs) and `client/`; log in once as each user.
-- **Rehearsed twice** on 2026-09-22 against freshly reset data with the API (script in the capstone PR); both runs gave
-  exactly the numbers below.
+- **Rehearsed twice** on 2026-09-22 against freshly reset data, driving the same 13 steps through the API; both runs
+  gave exactly the numbers below.
 
 ## 0:00–2:00 — the problem (2 min)
 
@@ -38,7 +38,7 @@ Keep the API terminal visible the whole time: it prints the pino JSON logs (requ
 | 10 | Add **2026-10-09 "Special bank holiday"** | Message: "1 approved request got days back: Ishara Fernando (0.5 → 0)"; Ishara's used goes 1.5 → **1** | same (and Nadeesha's re-credit rule) |
 | 11 | Delete it again | "…covers this date and was not re-charged: Ishara Fernando"; used stays **1** | same |
 | 12 | As Ruwan, show there's **no Holidays tab** (API 403) | Only HR maintains the list | same |
-| 13 | Ishara: a normal **full-day** Mon 19–Wed 21 Oct, Ruwan approves | Used +3; balances page, approvals and history as before. Suites green: Jest 109, Vitest 35, Playwright 3 | "Everything that already worked still works" |
+| 13 | Ishara: a normal **full-day** Mon 19–Wed 21 Oct, Ruwan approves | Used +3; balances page, approvals and history as before. Suites green: Jest 110, Vitest 35, Playwright 3 | "Everything that already worked still works" |
 
 If anything breaks: open the API terminal and read the log line (status, request id, error code) before saying
 anything.
