@@ -51,58 +51,58 @@ Only items that were actually run are ticked. Details and proof: [`STATUS.md`](S
 
 ## Phase 5 — The 3-Tier Build
 - [~] Postgres 16 runs in Docker with a named volume, and npm run migrate is a no-op on the second run — **no Docker**: PostgreSQL 16.14 via `embedded-postgres` with a persistent data dir; second `npm run migrate` prints nothing
-- [x] The full canonical schema (users, leave_types, leave_requests, leave_balances) exists via numbered migrations, seeds included — 001–003
-- [x] All routes run on the pool with parameterized queries only — no string-built SQL anywhere
-- [x] Approve updates status and balance in one transaction; over-budget requests get 409 INSUFFICIENT_BALANCE — rollback proven
-- [x] Login returns an 8-hour JWT; missing/bad tokens get 401, and GET /api/me works with a valid one
-- [x] The whole 403 matrix passes: owner-only cancel, manager approvals limited to their reports, HR sees all — 37/37
-- [ ] In the browser: Ishara logs in and applies, Ruwan approves from the Approvals page, and Ishara's balance card updates — client (Part D) not built yet
-- [ ] Five feature-branch PRs (Parts A–E) were reviewed and merged, and docs/api.md matches the running API — A, B, C, E-code merged (#14–#17) without review; D and E-docs not done
+- [x] The full canonical schema (users, leave_types, leave_requests, leave_balances) exists via numbered migrations, seeds included — 001–004
+- [x] All routes run on the pool with parameterized queries only — no string-built SQL anywhere — also re-checked in `docs/security-audit.md`
+- [x] Approve updates status and balance in one transaction; over-budget requests get 409 INSUFFICIENT_BALANCE — rollback proven (PR #15, #17)
+- [x] Login returns an 8-hour JWT; missing/bad tokens get 401, and GET /api/me works with a valid one — 37/37 (PR #16)
+- [x] The whole 403 matrix passes: owner-only cancel, manager approvals limited to their reports, HR sees all — 37/37 + Jest
+- [x] In the browser: Ishara logs in and applies, Ruwan approves from the Approvals page, and Ishara's balance card updates — automated in Chromium by the Playwright spec, 3/3 on `main`
+- [~] Five feature-branch PRs (Parts A–E) were reviewed and merged, and docs/api.md matches the running API — merged as #14, #15, #16, #17, #21, #23 **without review**; api.md rewritten from real responses (#23)
 
 ## Phase 6 — Testing & Quality
-- [ ] leaveDays is extracted to server/src/lib/leaveDays.js and the routes call it
-- [ ] The Jest unit suite passes, including the (fixed) Vesak poya holiday case
-- [ ] Supertest covers the leave-request happy path plus 400, 401, and 403, against a separate leaveflow_test database
-- [ ] The ApplyLeaveForm Vitest test passes with vitest run
-- [ ] The Playwright apply-approve spec passes with webServer booting both apps
-- [ ] Five written test cases exist, and at least one bug report uses the full template
+- [x] leaveDays is extracted to server/src/lib/leaveDays.js and the routes call it — PR #19
+- [x] The Jest unit suite passes, including the (fixed) Vesak poya holiday case — 29/29 on `main` and in CI
+- [x] Supertest covers the leave-request happy path plus 400, 401, and 403, against a separate leaveflow_test database
+- [x] The ApplyLeaveForm Vitest test passes with vitest run — 8/8
+- [x] The Playwright apply-approve spec passes with webServer booting both apps — 3/3, run on `main`
+- [~] Five written test cases exist, and at least one bug report uses the full template — both exist; the five cases are written but **not yet executed by hand**
 - [ ] You found, reported, and fixed all three seeded bugs via separate PRs — needs mentor to seed bugs
 
 ## Phase 7 — Local Deployment (Docker)
-- [ ] server/Dockerfile builds, with a .dockerignore keeping node_modules and .env out
-- [ ] You ran the API image manually with -p and -e DATABASE_URL and understand both flags
-- [ ] client/Dockerfile is multi-stage and nginx.conf proxies /api to the api service
-- [ ] docker compose up --build starts db, api, and web; compose ps shows db healthy
-- [ ] Migrations and seeds run via docker compose exec api …
-- [ ] The new-machine test passes: fresh clone to working login at localhost:8080 in 5 minutes
-- [ ] You verified data survives down/up and understand why down -v erases it
+- [~] server/Dockerfile builds, with a .dockerignore keeping node_modules and .env out — built by the Release workflow on GitHub's runner (not on this PC)
+- [ ] You ran the API image manually with -p and -e DATABASE_URL and understand both flags — needs Docker
+- [~] client/Dockerfile is multi-stage and nginx.conf proxies /api to the api service — written (PR #22), never built
+- [ ] docker compose up --build starts db, api, and web; compose ps shows db healthy — needs Docker
+- [ ] Migrations and seeds run via docker compose exec api … — needs Docker
+- [ ] The new-machine test passes: fresh clone to working login at localhost:8080 in 5 minutes — needs Docker
+- [ ] You verified data survives down/up and understand why down -v erases it — needs Docker (the embedded-postgres equivalent was verified in Part A)
 
 ## Phase 8 — CI/CD
-- [ ] .github/workflows/ci.yml runs lint, test-api (with a Postgres service container), and test-client on every PR
-- [ ] You can explain why CI uses npm ci and why runners being disposable makes green trustworthy
-- [ ] release.yml pushes ghcr.io/…/leaveflow-api tagged with the SHA and :main on every merge
-- [ ] Branch protection on main requires all three checks plus one review
-- [ ] You ran the fire drill: red X blocked the merge, you read the log, fixed it, and green unlocked it
-- [ ] The image with your latest merge SHA is visible under the repo's Packages
+- [x] .github/workflows/ci.yml runs lint, test-api (with a Postgres service container), and test-client on every PR — green on #22 and #23
+- [ ] You can explain why CI uses npm ci and why runners being disposable makes green trustworthy — yours to answer
+- [x] release.yml pushes ghcr.io/…/leaveflow-api tagged with the SHA and :main on every merge — Release runs 35573813742 and 35574206230
+- [ ] Branch protection on main requires all three checks plus one review — needs admin; steps in `docs/branch-protection.md`
+- [ ] You ran the fire drill: red X blocked the merge, you read the log, fixed it, and green unlocked it — needs branch protection first
+- [~] The image with your latest merge SHA is visible under the repo's Packages — pushed per the Release log; the listing check needs a `read:packages` token scope
 
 ## Phase 9 — Cloud Deployment
-- [ ] LeaveFlow (API + client) is live on Render over HTTPS, migrations run via the shell
+- [ ] LeaveFlow (API + client) is live on Render over HTTPS, migrations run via the shell — plan in `docs/deploy-render.md`, not deployed
 - [ ] AWS root user has MFA and is retired; you work as an IAM user
 - [ ] A $10 monthly budget alarm emails you — created before any resource
 - [ ] The API image is pushed to ECR in ap-south-1
 - [ ] RDS is not publicly accessible and its security group admits only App Runner
 - [ ] App Runner deploys green with health check /api/health and boot-time migrations
 - [ ] https://leave.ceylonroots.lk serves the app through CloudFront with an ACM certificate
-- [ ] A written teardown checklist exists and was executed on the staging copy
+- [ ] A written teardown checklist exists and was executed on the staging copy — written (`docs/teardown-checklist.md`), not executed
 
 ## Phase 10 — Production Operations
-- [ ] Prod logs are structured JSON via pino, with request ids and auth headers redacted
+- [~] Prod logs are structured JSON via pino, with request ids and auth headers redacted — implemented and verified **locally** (PR #20); no prod
 - [ ] The 5xx CloudWatch alarm notifies your email via SNS, and you've tripped it on purpose once
-- [ ] You survived the staged incident using the runbook and wrote a blameless post-mortem
-- [ ] A snapshot restore was performed, verified against real data, deleted, and logged with its RTO
-- [ ] The security self-audit table is verified: params, 403s, secrets, npm audit, rate limit
-- [ ] The login endpoint returns 429 after 10 attempts/minute in prod
-- [ ] Nadeesha's overlap feature shipped to prod through story → PR → CI → staging → release
+- [ ] You survived the staged incident using the runbook and wrote a blameless post-mortem — runbook and template written; needs mentor
+- [ ] A snapshot restore was performed, verified against real data, deleted, and logged with its RTO — drill written; needs RDS
+- [~] The security self-audit table is verified: params, 403s, secrets, npm audit, rate limit — verified **locally** (`docs/security-audit.md`)
+- [~] The login endpoint returns 429 after 10 attempts/minute in prod — verified **locally**, incl. behind a simulated proxy
+- [ ] Nadeesha's overlap feature shipped to prod through story → PR → CI → staging → release — not built
 
 ## Capstone
 - [ ] Not reached
