@@ -80,3 +80,16 @@ test('fits a 360px phone: no horizontal scroll, tap-sized buttons', async ({ bro
     }
   }
 });
+
+test('login shows the API error on 401, and a bad stored token lands back on Login', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('Email').fill('ishara@ceylonroots.lk');
+  await page.getByLabel('Password').fill('wrong-password');
+  await page.getByRole('button', { name: 'Log in' }).click();
+  await expect(page.getByRole('alert')).toHaveText('Wrong email or password');
+
+  await page.evaluate(() => localStorage.setItem('token', 'not-a-real-jwt'));
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Log in' })).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('token'))).toBeNull();
+});
