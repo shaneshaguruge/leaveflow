@@ -2,7 +2,7 @@
 
 > Copy this file to `docs/postmortems/YYYY-MM-DD-short-name.md` and fill it in within **48 hours** of the incident.
 > **Status:** template only. No LeaveFlow incident has happened yet and the guide's staged incident drill
-> (mentor rotates `JWT_SECRET` on staging) has **not** been run — there is no staging environment.
+> (`JWT_SECRET` rotated on staging) has **not** been run — there is no staging environment.
 
 **Blameless means:** name causes, never culprits. Write "the deploy process allowed an unmigrated schema",
 not "Kasun broke it". People who fear blame hide mistakes, and hidden mistakes repeat.

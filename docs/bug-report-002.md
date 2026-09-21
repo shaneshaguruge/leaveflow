@@ -7,7 +7,7 @@
 | **Component** | `server/src/routes/leaveRequests.js` — overlap check in `POST /` |
 | **Severity** | **Medium** — the same day is reserved twice, so the balance is over-reserved and the request history is inconsistent; the contract's `409 OVERLAPPING_REQUEST` rule (`api.md` §5) is broken |
 | **Priority** | **High** — silent data error on the most common action (applying for leave) |
-| **Status** | **Fixed** in the PR from `fix/overlap-boundary` into `bughunt`, with a regression test |
+| **Status** | **Fixed** in PR #46 (`fix/overlap-boundary` into the throwaway `bughunt` branch); the regression test is on `main` since PR #49 |
 
 ## Steps to reproduce
 

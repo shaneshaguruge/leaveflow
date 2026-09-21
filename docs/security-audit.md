@@ -21,12 +21,12 @@ real output. Where something could not be verified, the row says so.
 
 | Check | Command | Result |
 |---|---|---|
-| Count query calls in routes | `grep -rn "query(" server/src/routes/ \| wc -l` | `22` (was 21; +1 for the US-16 overlap query in `team.js`, PR #32) |
-| Count query calls in all server code | `grep -rn "query(" server/src/ \| wc -l` | `26` (22 in routes + 4 in `db/migrate.js`; re-run 2026-09-21 after PR #32) |
-| Any `${…}` inside a SQL string passed to `query(` (multi-line aware) | Node script: regex over every `query(<literal>` in `server/src/{routes,db,middleware}/*.js`, flag `${` inside the literal | `query() calls with literal SQL: 25 with ${} interpolation: 0` (re-run 2026-09-21 after PR #32; was 24 before it) — 25 of the 26 calls; the 26th is the non-literal one in `db/migrate.js` (next rows) |
-| Any `${…}` in routes at all | `grep -rnE '\$\{[^}]*\}' server/src/routes/` | 2 hits, both **error messages**, not SQL: `leaveRequests.js:50` (`OVERLAPPING_REQUEST` text) and `:64` (`INSUFFICIENT_BALANCE` text) |
+| Count query calls in routes | `grep -rn "query(" server/src/routes/ \| wc -l` | `23` (re-run 2026-09-21 after PR #49; +1 in `team.js` for US-16 (#32), +1 in `reports.js` for the CSV export (#41)) |
+| Count query calls in all server code | `grep -rn "query(" server/src/ \| wc -l` | `27` (23 in routes + 4 in `db/migrate.js`; re-run 2026-09-21 after PR #49) |
+| Any `${…}` inside a SQL string passed to `query(` (multi-line aware) | Node script: regex over every `query(<literal>` in `server/src/{routes,db,middleware}/*.js`, flag `${` inside the literal | `query() calls with literal SQL: 26 with ${} interpolation: 0` (re-run 2026-09-21 after PR #49) — 26 of the 27 calls; the 27th is the non-literal one in `db/migrate.js` (next rows) |
+| Any `${…}` in routes at all | `grep -rnE '\$\{[^}]*\}' server/src/routes/` | 4 hits, none in SQL: `leaveRequests.js:44` and `:58` (error messages), `reports.js:18` (error message) and `reports.js:41` (download file name; `year` is validated as 4 digits first) |
 | String concatenation into `query(` | `grep -rnE "query\([^)]*\+ " server/src/` | no output |
-| Non-literal SQL | `grep -rnE "query\(\s*[^\`'\" ]" server/src/ server/scripts/` | 1 hit: `db/migrate.js:11` runs the `.sql` migration files from the repo — no user input |
+| Non-literal SQL | `grep -rnE "query\(\s*[^\`'\" ]" server/src/ server/scripts/` | 1 hit: `db/migrate.js:13` runs the `.sql` migration files from the repo — no user input |
 
 Conclusion: all user input reaches SQL as bind parameters (`$1`, `$2`, …). Role in `team.js` is also a parameter (`$2 = 'HR_ADMIN'`).
 

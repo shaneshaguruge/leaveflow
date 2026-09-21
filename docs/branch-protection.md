@@ -9,7 +9,7 @@ Force pushes and branch deletion are blocked.
 
 Why 0 approvals: this is a solo repo. GitHub does not let a PR author approve their own PR, so a required
 approval would lock the only developer out of `main`. The guide asks for "one review"; that decision is left
-to the mentor — raise the count to `1` once a second person with write access reviews PRs.
+to the project owner — raise the count to `1` once a second person with write access reviews PRs.
 
 The required status checks are the job names in `.github/workflows/ci.yml`:
 
