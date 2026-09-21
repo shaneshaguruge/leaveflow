@@ -3,7 +3,8 @@ const pool = require('../db/pool');
 const { requireAuth } = require('../middleware/auth');
 const { asyncHandler, httpError } = require('../middleware/errors');
 const { validate, required, isDate, onOrAfter } = require('../middleware/validate');
-const { leaveDays } = require('../lib/leaveDays');
+const { leaveDays, DAY_PARTS } = require('../lib/leaveDays');
+const { requestsClash } = require('../lib/overlap');
 const { loadHolidays } = require('../lib/holidays');
 const router = express.Router();
 router.use(requireAuth);
@@ -26,24 +27,40 @@ router.post('/', validate([
   ['start_date', isDate, 'must be YYYY-MM-DD'],
   ['end_date', isDate, 'must be YYYY-MM-DD'],
   ['end_date', onOrAfter('start_date'), 'must be on or after start_date'],
+  ['day_part', (v) => v === undefined || DAY_PARTS.includes(v), 'must be FULL, AM or PM'],
 ]), asyncHandler(async (req, res) => {
   const { leave_type_id, start_date, end_date, reason } = req.body;
+  const dayPart = req.body.day_part || 'FULL'; // applies to the last day (docs/capstone/design.md §2)
   const userId = req.user.id; // always the logged-in user; any user_id in the body is ignored
   const holidays = await loadHolidays();
-  const requested = leaveDays(start_date, end_date, holidays);
-  if (requested === 0) throw httpError(400, 'VALIDATION_ERROR', 'the dates contain no working days');
+  const requested = leaveDays(start_date, end_date, holidays, dayPart);
+  if (requested === 0) {
+    // Name the holiday so nobody has to ask why (Nadeesha, story review): "2026-05-01 is Vesak … — no leave needed"
+    const hol = await pool.query(
+      `SELECT holiday_date, name FROM public_holidays
+       WHERE holiday_date BETWEEN $1 AND $2 AND EXTRACT(ISODOW FROM holiday_date) < 6
+       ORDER BY holiday_date LIMIT 1`, [start_date, end_date]);
+    throw httpError(400, 'VALIDATION_ERROR', hol.rowCount
+      ? `${hol.rows[0].holiday_date} is ${hol.rows[0].name} — no leave needed`
+      : 'the dates contain no working days');
+  }
 
-  const lt = await pool.query('SELECT annual_allocation FROM leave_types WHERE id = $1', [leave_type_id]);
+  const lt = await pool.query('SELECT name, annual_allocation FROM leave_types WHERE id = $1', [leave_type_id]);
   if (!lt.rowCount) throw httpError(400, 'BAD_TYPE', 'Unknown leave type');
+  if (dayPart !== 'FULL' && !['Annual', 'Casual'].includes(lt.rows[0].name)) {
+    throw httpError(400, 'VALIDATION_ERROR', 'Half days are for Annual or Casual leave');
+  }
 
-  const overlap = await pool.query(
-    `SELECT id, start_date, end_date FROM leave_requests
+  // Candidates share at least one date; requestsClash decides, so a morning and an afternoon can share a date.
+  const candidates = await pool.query(
+    `SELECT id, start_date, end_date, day_part FROM leave_requests
      WHERE user_id = $1 AND status IN ('PENDING', 'APPROVED')
        AND start_date <= $3 AND end_date >= $2
-     ORDER BY start_date LIMIT 1`, [userId, start_date, end_date]);
-  if (overlap.rowCount) {
-    const o = overlap.rows[0];
-    throw httpError(409, 'OVERLAPPING_REQUEST', `These dates overlap your request #${o.id} (${o.start_date} to ${o.end_date})`);
+     ORDER BY start_date`, [userId, start_date, end_date]);
+  const clash = candidates.rows.find((o) => requestsClash(o, { start_date, end_date, day_part: dayPart }));
+  if (clash) {
+    throw httpError(409, 'OVERLAPPING_REQUEST',
+      `These dates overlap your request #${clash.id} (${clash.start_date} to ${clash.end_date})`);
   }
 
   const year = Number(start_date.slice(0, 4));
@@ -60,8 +77,8 @@ router.post('/', validate([
     throw httpError(409, 'INSUFFICIENT_BALANCE', `Only ${Math.max(left, 0)} day(s) of this type left this year`);
   }
 
-  const ins = await pool.query(`INSERT INTO leave_requests (user_id, leave_type_id, start_date, end_date, reason)
-     VALUES ($1, $2, $3, $4, $5) RETURNING *`, [userId, leave_type_id, start_date, end_date, reason || null]);
+  const ins = await pool.query(`INSERT INTO leave_requests (user_id, leave_type_id, start_date, end_date, day_part, reason)
+     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`, [userId, leave_type_id, start_date, end_date, dayPart, reason || null]);
   res.status(201).json(ins.rows[0]);
 }));
 

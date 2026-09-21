@@ -34,8 +34,8 @@ router.get('/leave-requests.csv', requireAuth, requireRole('HR_ADMIN'), asyncHan
     [year ?? null, status ?? null, type ?? null]);
 
   const csv = toCsv(
-    ['Request ID', 'Employee', 'Type', 'Start date', 'End date', 'Working days', 'Status', 'Decided by', 'Decided at', 'Reason'],
-    q.rows.map((r) => [r.id, r.employee_name, r.leave_type, r.start_date, r.end_date,
+    ['Request ID', 'Employee', 'Type', 'Start date', 'End date', 'Day part', 'Working days', 'Status', 'Decided by', 'Decided at', 'Reason'],
+    q.rows.map((r) => [r.id, r.employee_name, r.leave_type, r.start_date, r.end_date, r.day_part,
       leaveDays(r.start_date, r.end_date, holidays, r.day_part), r.status, r.decided_by_name,
       r.decided_at ? r.decided_at.toISOString() : '', r.reason]));
   res.set('Content-Type', 'text/csv; charset=utf-8');

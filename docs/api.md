@@ -21,7 +21,7 @@ through the logs; otherwise the server generates one.
 | 401 | I don't know who you are | `NO_TOKEN`, `BAD_TOKEN` (invalid, forged or expired), `BAD_CREDENTIALS` |
 | 403 | I know who you are, and the answer is no | `FORBIDDEN` |
 | 404 | No such thing | `NOT_FOUND` (unknown request id, or unknown endpoint) |
-| 409 | Conflicts with the current state | `OVERLAPPING_REQUEST`, `INSUFFICIENT_BALANCE`, `INVALID_STATE` |
+| 409 | Conflicts with the current state | `OVERLAPPING_REQUEST`, `INSUFFICIENT_BALANCE`, `INVALID_STATE`, `HOLIDAY_EXISTS` |
 | 413 | Request body over 100 kB (any endpoint that takes a body) | `PAYLOAD_TOO_LARGE` |
 | 429 | Too many login attempts | `RATE_LIMITED` |
 | 500 | Server bug — not your fault | `INTERNAL`, message always `"Something went wrong"` (details are logged, never returned) |
@@ -47,6 +47,9 @@ Any other 4xx without an app-specific code uses its HTTP status name in the same
 | GET | `/team/requests?from=&to=` | MANAGER, HR_ADMIN | 200 | 400, 401, 403 | US-16 |
 | GET | `/team/requests?history=true` | MANAGER, HR_ADMIN | 200 | 400, 401, 403 | US-4 |
 | GET | `/reports/leave-requests.csv` | HR_ADMIN | 200 (CSV) | 400, 401, 403 | US-12 |
+| GET | `/holidays?year=` | HR_ADMIN | 200 | 400, 401, 403 | US-21 |
+| POST | `/holidays` | HR_ADMIN | 201 | 400, 401, 403, 409 | US-21 |
+| DELETE | `/holidays/:date` | HR_ADMIN | 200 | 400, 401, 403, 404 | US-21 |
 
 Any other path under `/api` → `404 {"error":{"code":"NOT_FOUND","message":"No such endpoint"}}`.
 
@@ -83,7 +86,7 @@ reports), US-14–15. There is **no DELETE** endpoint: cancelling is `PATCH {"ac
 ### GET /leave-requests
 EMPLOYEE / MANAGER → only their own requests; HR_ADMIN → every request. Newest first. Each item is a full row plus
 the requester's name:
-`id, user_id, employee_name, leave_type_id, start_date, end_date, reason, status, decided_by, decided_by_name, decided_at, created_at`
+`id, user_id, employee_name, leave_type_id, start_date, end_date, day_part, reason, status, decided_by, decided_by_name, decided_at, created_at`
 (`decided_by_name` is `null` while PENDING), plus `days`: working days with weekends **and** public holidays excluded
 (the same count the balance uses). The HR page filters by year, status and type in the browser.
 (dates `YYYY-MM-DD`; timestamps ISO 8601 UTC).
@@ -97,18 +100,23 @@ Creates a request for **the logged-in user**. `user_id` comes from the token; an
 | `start_date` | yes | `YYYY-MM-DD` |
 | `end_date` | yes | `YYYY-MM-DD`, on or after `start_date` |
 | `reason` | no | text |
+| `day_part` | no | `FULL` (default), `AM` or `PM` — applies to the **last** day: `AM` = off that morning, `PM` = off that afternoon (0.5). Else `400 VALIDATION_ERROR` "day_part: must be FULL, AM or PM" |
 
 **Checks, in this order:**
 1. Fields → `400 VALIDATION_ERROR` naming the field
-2. At least one working day in the range → else `400 VALIDATION_ERROR` "the dates contain no working days"
-3. Leave type exists → else `400 BAD_TYPE`
+2. At least one working day in the range → else `400 VALIDATION_ERROR`: if the range is a public holiday the message
+   names it (`"2026-05-01 is Vesak Full Moon Poya Day + International Labour Day — no leave needed"`), otherwise
+   "the dates contain no working days"
+3. Leave type exists → else `400 BAD_TYPE`; a half day (`AM`/`PM`) only for Annual or Casual → else `400 VALIDATION_ERROR`
+   "Half days are for Annual or Casual leave"
 4. No overlap with the user's own PENDING or APPROVED request → else `409 OVERLAPPING_REQUEST` (see §5)
 5. Enough balance: `annual_allocation − used_days − pending_days` for that type and the start date's year → else `409 INSUFFICIENT_BALANCE` "Only N day(s) of this type left this year"
-6. Insert with status `PENDING` → `201` with the new row
+6. Insert with status `PENDING` → `201` with the new row (including `day_part`)
 
-**Day counting:** inclusive of both dates; **weekends and 2026 Sri Lankan public holidays (including every poya day) are
-not counted** (`server/src/lib/holidays.js`). Example: a request for 2026-05-01 (Vesak poya) alone → `400 "the dates contain no working days"`.
-Years other than 2026 exclude weekends only until their holiday list is added.
+**Day counting:** inclusive of both dates; **weekends and every date in the `public_holidays` table are not counted**
+(HR maintains it, `GET/POST/DELETE /holidays`; 2026 is seeded). A half day subtracts 0.5 if its last day is a working
+day, so a half day on a poya or a weekend is 0 and refused. Examples: 29 Apr–4 May 2026 = 3; 27 Feb–3 Mar 2026 (Medin
+poya Monday) = 2; 5–7 Oct + `PM` = 2.5. Years without holidays in the table exclude weekends only.
 
 ### PATCH /leave-requests/:id
 Body `{ "action": "approve" | "reject" | "cancel" }` — rules in §3. Returns the updated row.
@@ -122,7 +130,9 @@ The logged-in user, current calendar year; one entry per leave type, even if not
 ```
 - `id` is the leave type id.
 - `used_days` — from APPROVED requests (stored in `leave_balances`).
-- `pending_days` — working days in PENDING requests, shown to users as **"reserved"** (US-3). Computed, not stored.
+- `pending_days` — working days in PENDING requests of this year (holidays excluded, half days 0.5), shown to users as
+  **"reserved"** (US-3). Computed, not stored. Cancelling a pending half day gives its 0.5 back.
+- All three can be halves, e.g. `"used_days":0.5,"remaining_days":13.5`.
 - `remaining_days` = `annual_allocation − used_days − pending_days`. Computed, not stored.
 
 ### GET /team/requests
@@ -171,13 +181,36 @@ same way as the screen. Optional query parameters: `year` (`YYYY`, by start date
 ```
 200  Content-Type: text/csv; charset=utf-8
      Content-Disposition: attachment; filename="leave-requests-2026.csv"
-Request ID,Employee,Type,Start date,End date,Working days,Status,Decided by,Decided at,Reason
-1,Ishara Fernando,Annual,2026-04-29,2026-05-04,3,APPROVED,Ruwan Jayasuriya,2026-09-21T12:00:00.000Z,"Vesak trip, Kandy"
+Request ID,Employee,Type,Start date,End date,Day part,Working days,Status,Decided by,Decided at,Reason
+1,Ishara Fernando,Annual,2026-04-29,2026-05-04,FULL,3,APPROVED,Ruwan Jayasuriya,2026-09-21T12:00:00.000Z,"Vesak trip, Kandy"
 ```
 - UTF-8 with a byte-order mark and CRLF line ends, so Excel opens it directly; fields with `,` `"` or line breaks are quoted.
 - **CSV injection:** a cell starting with `=` `+` `-` `@` is prefixed with `'` so Excel shows it as text, never runs it.
 - Newest first. `Working days` excludes weekends and public holidays. The per-employee year-end totals (US-11) are a
   separate story, not built.
+
+### /holidays — HR manages the public holiday list (US-21)
+HR_ADMIN only; EMPLOYEE and MANAGER → `403 FORBIDDEN`. Every day count in the API reads this table.
+```json
+// GET /api/holidays?year=2026   (year defaults to the current year; not YYYY → 400)
+200 [{"date":"2026-01-03","name":"Duruthu Full Moon Poya Day","year":2026,"note":"to confirm against the official gazette"}, …25 rows]
+
+// POST /api/holidays {"date":"2026-10-14","name":"Special bank holiday"}
+// Approved requests covering the date get the day back (used_days drops); they are listed in "adjusted".
+201 {"holiday":{"date":"2026-10-14","name":"Special bank holiday","year":2026,"note":null},
+     "adjusted":[{"id":6,"user_id":2,"employee_name":"Ishara Fernando","leave_type_id":1,"start_date":"2026-10-14",
+                  "end_date":"2026-10-14","day_part":"PM","days_before":0.5,"days_after":0}]}
+409 {"error":{"code":"HOLIDAY_EXISTS","message":"2026-10-14 is already a holiday"}}
+400 date not YYYY-MM-DD · name empty or over 100 characters
+
+// DELETE /api/holidays/2026-10-14
+// Approved leave is NOT re-charged; the approved requests covering the date are listed for HR.
+200 {"deleted":{"date":"2026-10-14","name":"Special bank holiday","year":2026},
+     "not_recharged":[{"id":6,"user_id":2,"employee_name":"Ishara Fernando","leave_type_id":1,"start_date":"2026-10-14",
+                       "end_date":"2026-10-14","day_part":"PM"}]}
+404 {"error":{"code":"NOT_FOUND","message":"2026-02-02 is not a holiday"}}
+```
+Pending requests always count the current list, so their reserved days change as soon as HR adds or deletes a holiday.
 
 ---
 
@@ -287,5 +320,11 @@ HTTP/1.1 409 Conflict
 | 5–7 Oct, PENDING | 7–9 Oct | 409 (shares 7 Oct) |
 | 5–7 Oct, APPROVED | 1–5 Oct | 409 (shares 5 Oct) |
 | 5–7 Oct, APPROVED | 8–9 Oct | 201 |
+| 9 Oct `AM`, PENDING | 9 Oct `PM` | 201 (morning and afternoon don't clash) |
+| 9 Oct `AM`, PENDING | 9 Oct `AM` or 9 Oct full day | 409 |
+| 5–7 Oct `PM` (7 Oct afternoon only) | 7 Oct `AM` | 201 |
+
+With half days, two requests clash only if they share a half-day slot: a request's `day_part` occupies just the
+morning or afternoon of its **last** day; every other day is taken whole.
 | 5–7 Oct, CANCELLED | 5–7 Oct | 201 (cancelled dates are free) |
 | someone else's, 5–7 Oct | 5–7 Oct | 201 (the rule is per user) |
