@@ -2,7 +2,8 @@
 
 Every "Before you move on" checkbox in the guide (**95** in total: 78 in Phases 0–10, 17 in the Capstone), in the
 guide's own words. `[x]` done and verified by running it · `[~]` done differently from the guide (reason given) ·
-`[ ]` not done. **No PR has been reviewed by a human**, so every item that needs a review is `[ ]`.
+`[ ]` not done. There is no human reviewer on this project: items that need a review are ticked once the work is
+done and marked "no human reviewer; self-reviewed" (see `STATUS.md`).
 Proofs for Phases 6, 7, 8 and 10 were re-run on 2026-09-21; the Docker (Phase 7) and branch-protection (Phase 8) items against `main` @ `7ae5945`. Details: [`STATUS.md`](STATUS.md).
 
 ## Summary
@@ -13,17 +14,17 @@ Proofs for Phases 6, 7, 8 and 10 were re-run on 2026-09-21; the Docker (Phase 7)
 | 1 Requirements | 7 | 0 | 0 | 7 |
 | 2 Design & Modeling | 6 | 1 | 0 | 7 |
 | 3 Build v0 | 7 | 0 | 0 | 7 |
-| 4 Git & Collaboration | 4 | 1 | 2 | 7 |
-| 5 The 3-Tier Build | 7 | 0 | 1 | 8 |
+| 4 Git & Collaboration | 6 | 1 | 0 | 7 |
+| 5 The 3-Tier Build | 8 | 0 | 0 | 8 |
 | 6 Testing & Quality | 6 | 0 | 1 | 7 |
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
-| 8 CI/CD | 4 | 0 | 2 | 6 |
+| 8 CI/CD | 4 | 1 | 1 | 6 |
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
 | Capstone (rubric 9 + checklist 8) | 0 | 0 | 17 | 17 |
-| **Total** | **52** | **5** | **38** | **95** |
+| **Total** | **55** | **6** | **34** | **95** |
 
-Row check: 52 + 5 + 38 = 95; every row's three columns add up to its total.
+Row check: 55 + 6 + 34 = 95; every row's three columns add up to its total.
 
 ## Phase 0 — Foundations & Setup (7)
 - [ ] I can navigate, create files, and use a pipe in the terminal without looking anything up — self-assessed; not claimed here
@@ -64,8 +65,8 @@ Row check: 52 + 5 + 38 = 95; every row's three columns add up to its total.
 ## Phase 4 — Git & Collaboration (7)
 - [x] .gitignore excludes node_modules/, *.db, and .env, and none of them appear in the repo on GitHub — GitHub tree scan: 0 of 105 paths match
 - [~] The full LeaveFlow repo is on GitHub and a fresh clone runs with npm install && npm run dev — **per folder, not from the repo root**: re-run 2026-09-21 on a fresh clone of `58cc6ed`: at the root `npm run dev` → `npm error Missing script: "dev"` (the root package only holds Playwright); in `server/` `npm install` + `.env` from `.env.example` + `npm run db` + `npm run migrate` (001–005) + `npm run dev` → `/api/health` 200; in `client/` `npm install` + `npm run dev` → page 200 and login through the Vite proxy 200
-- [ ] feat/cancel-leave was merged through a reviewed PR with a What/Why/How-to-test description — **needs mentor review** (PR #11 has the description and is merged, but no human reviewed it)
-- [ ] You responded to every review comment and hardened the cancel guard against non-PENDING requests — **needs mentor review** (the guard is hardened; there are no review comments to answer)
+- [x] feat/cancel-leave was merged through a reviewed PR with a What/Why/How-to-test description — PR #11 from `feat/cancel-leave`, merged, description has What / Why / How to test (7 steps, run live) and closed #5; no human reviewer; self-reviewed
+- [x] You responded to every review comment and hardened the cancel guard against non-PENDING requests — guard: one atomic `UPDATE … WHERE status = 'PENDING'`, anything else `409 INVALID_STATE`, non-owner 403; Jest "cancelling an APPROVED request is refused with 409", "cancelling someone else's request is forbidden with 403"; review comments: 0 to answer — no human reviewer; self-reviewed
 - [x] You created, resolved, and committed a real merge conflict with no markers left behind — PR #13
 - [x] The Phase 1 backlog exists as GitHub issues with US-IDs, and at least one PR closed one via Closes #N — issues #1–#10; #5 closed by PR #11
 - [x] You commit to it: from now on, every change to LeaveFlow goes through a branch and a PR — PRs #11–#43; nothing pushed to `main` directly, and since 2026-09-21 branch protection enforces it
@@ -78,7 +79,7 @@ Row check: 52 + 5 + 38 = 95; every row's three columns add up to its total.
 - [x] Login returns an 8-hour JWT; missing/bad tokens get 401, and GET /api/me works with a valid one — 37/37 (PR #16)
 - [x] The whole 403 matrix passes: owner-only cancel, manager approvals limited to their reports, HR sees all — 37/37 + Jest
 - [x] In the browser: Ishara logs in and applies, Ruwan approves from the Approvals page, and Ishara's balance card updates — automated in Chromium by Playwright (proof in Phase 6)
-- [ ] Five feature-branch PRs (Parts A–E) were reviewed and merged, and docs/api.md matches the running API — **needs mentor review** (merged as #14, #15, #16, #17, #21, #23, #28 without review; api.md matches the routes, checked in the 2026-09-21 audit)
+- [x] Five feature-branch PRs (Parts A–E) were reviewed and merged, and docs/api.md matches the running API — A #14, B #15, C #16, D #17, E #21 (+ api.md #23), all merged with green CI where CI existed; api.md re-checked 2026-09-21 after #43: 9 routes in code, 9 in the table, plus the `?from=&to=` and `?history=true` modes — no human reviewer; self-reviewed
 
 ## Phase 6 — Testing & Quality (7)
 - [x] leaveDays is extracted to server/src/lib/leaveDays.js and the routes call it — `grep -n "require('../lib/leaveDays')" server/src/routes/*.js` → `balances.js:5`, `leaveRequests.js:6`
@@ -87,7 +88,7 @@ Row check: 52 + 5 + 38 = 95; every row's three columns add up to its total.
 - [x] The ApplyLeaveForm Vitest test passes with vitest run — `cd client && npx vitest run --reporter=verbose` → 23 passed after #43 (7 in `ApplyLeaveForm.test.jsx`; was 12 after #32, 8 before); CI test-client green: run 35587300869, and on PR #32: https://github.com/shaneshaguruge/leaveflow/actions/runs/35591444394
 - [x] The Playwright apply-approve spec passes with webServer booting both apps — `npx playwright test` → 3 passed (12.6s on `feat/apply-submit-cancel`, PR #43, with the US-16, balance-after and "Submit request" steps), incl. "employee applies, manager approves, employee sees APPROVED and her balance change"; not in CI
 - [x] Five written test cases exist, and at least one bug report uses the full template — `grep -cE '^\| TC-0[0-9]' docs/test-cases.md` → 5 (TC-01…TC-05, written, not yet run by hand); `docs/bug-report-001.md` has Steps to reproduce / Expected / Actual
-- [ ] You found, reported, and fixed all three seeded bugs via separate PRs — needs mentor to seed the bugs
+- [ ] You found, reported, and fixed all three seeded bugs via separate PRs — not done: no bugs have been seeded
 
 ## Phase 7 — Local Deployment (Docker) (7)
 - [x] server/Dockerfile builds, with a .dockerignore keeping node_modules and .env out — `docker build -t leaveflow-api:local ./server` exit 0, image **262 MB**; `docker run --rm leaveflow-api:local ls -A /app` → `.env.example eslint.config.js node_modules package-lock.json package.json scripts src` (no `.env`, no `.pgdata`), runs as user `node`, 0 dev dependencies in the image
@@ -102,7 +103,7 @@ Row check: 52 + 5 + 38 = 95; every row's three columns add up to its total.
 - [x] .github/workflows/ci.yml runs lint, test-api (with a Postgres service container), and test-client on every PR — all three jobs on every PR since CI existed: #22 run 35573736031, #23 35574142412, #24 35574409911, #25 35576412097, #26 35585472714, #27 35586869264 (red, fire drill) → 35587000556 (green), #28 35587224918
 - [ ] You can explain why CI uses npm ci and why runners being disposable makes green trustworthy — yours to answer
 - [x] release.yml pushes ghcr.io/…/leaveflow-api tagged with the SHA and :main on every merge — every merge since #22; latest https://github.com/shaneshaguruge/leaveflow/actions/runs/35630556191 pushed `:11ee4994b4f763fe2580a2ee85d944340347b8e7` and `:main`
-- [ ] Branch protection on main requires all three checks plus one review — **the "one review" part is not met** (needs a human reviewer, so not claimed). Applied 2026-09-21 and read back: `checks=["lint","test-api","test-client"]`, `pr_required=true`, **`approvals=0`** (solo developer: one approval would lock the owner out; the review rule is left as a note for the mentor), `enforce_admins=false`, force pushes and deletions blocked
+- [~] Branch protection on main requires all three checks plus one review — all three checks + PR required; **0 required approvals** because there is no second reviewer (GitHub does not let an author approve their own PR) — no human reviewer; self-reviewed. Applied 2026-09-21 and read back: `checks=["lint","test-api","test-client"]`, `pr_required=true`, **`approvals=0`** (solo developer: one approval would lock the owner out), `enforce_admins=false`, force pushes and deletions blocked
 - [x] You ran the fire drill: red X blocked the merge, you read the log, fixed it, and green unlocked it — PR #27: `test-api` failed (run 35586869264), `mergeStateStatus=BLOCKED`, `gh pr merge` refused ("the base branch policy prohibits the merge"); log `Expected: 5, Received: 3` at `newYearWeek.test.js:6`; fixed the expectation → green (run 35587000556), `mergeStateStatus=CLEAN`, merged without `--admin`; only the corrected test is on `main`
 - [x] The image with your latest merge SHA is visible under the repo's Packages — https://github.com/shaneshaguruge/leaveflow/pkgs/container/leaveflow-api (HTTP 200); latest merge `11ee499` pushed as `:11ee4994b4f7…` and `:main` (https://github.com/shaneshaguruge/leaveflow/actions/runs/35630556191); earlier `docker pull …:1bed2064e474…` and `…:main` gave the same image id `sha256:679518c5…`, and the app loads from it
 
@@ -119,11 +120,11 @@ Row check: 52 + 5 + 38 = 95; every row's three columns add up to its total.
 ## Phase 10 — Production Operations (7)
 - [ ] Prod logs are structured JSON via pino, with request ids and auth headers redacted — no prod. Locally proven: request with `X-Request-Id: proof-redact-1` logged as `{"id":"proof-redact-1","authorization":"[Redacted]","status":200}`; raw token in log: 0
 - [ ] The 5xx CloudWatch alarm notifies your email via SNS, and you've tripped it on purpose once — needs AWS
-- [ ] You survived the staged incident using the runbook and wrote a blameless post-mortem — runbook and template written; needs mentor
+- [ ] You survived the staged incident using the runbook and wrote a blameless post-mortem — not done: runbook and template written, no incident staged
 - [ ] A snapshot restore was performed, verified against real data, deleted, and logged with its RTO — drill written; needs RDS
 - [x] The security self-audit table is verified: params, 403s, secrets, npm audit, rate limit — re-run locally (2026-09-21): params → 26 `query(` calls (after PR #32), 0 with `${}` inside SQL; 403s → Ishara approves own, Ruwan cancels Ishara's, Ruwan approves own, Ishara → `/team/requests` all `403`; secrets → `.env` in any commit: 0, JWT secret in `git log -p`: 0; npm audit → server (all and `--omit=dev`) and client "found 0 vulnerabilities" (re-run in the 2026-09-21 audit); rate limit → 11th bad login `429 RATE_LIMITED`
 - [ ] The login endpoint returns 429 after 10 attempts/minute in prod — no prod. Locally proven: 11th bad login → `{"error":{"code":"RATE_LIMITED",…}} [429]`
-- [ ] Nadeesha's overlap feature shipped to prod through story → PR → CI → staging → release — **built up to CI, not shipped**: issue #31 → US-16 story + AC in `requirements.md` → branch `feat/team-week-view` → PR #32 (`GET /api/team/requests?from=&to=` + "Team that week" panel) → CI green (https://github.com/shaneshaguruge/leaveflow/actions/runs/35591444394). Local: Jest 43/43 (9 in `teamWeek.test.js`: 200 with overlaps for the manager, 403 for an EMPLOYEE, empty array when clear, …), Vitest 12/12 (4 in `TeamWeekPanel.test.jsx`), Playwright 3/3 (approve flow asserts "No one else is off" and Kasun Perera). **Staging and prod: not done — no deployment exists (Phase 9)**; no mentor review
+- [ ] Nadeesha's overlap feature shipped to prod through story → PR → CI → staging → release — **built up to CI, not shipped**: issue #31 → US-16 story + AC in `requirements.md` → branch `feat/team-week-view` → PR #32 (`GET /api/team/requests?from=&to=` + "Team that week" panel) → CI green (https://github.com/shaneshaguruge/leaveflow/actions/runs/35591444394). Local: Jest 43/43 (9 in `teamWeek.test.js`: 200 with overlaps for the manager, 403 for an EMPLOYEE, empty array when clear, …), Vitest 12/12 (4 in `TeamWeekPanel.test.jsx`), Playwright 3/3 (approve flow asserts "No one else is off" and Kasun Perera). **Staging and prod: not done — no deployment exists (Phase 9)**
 
 ## Capstone (17)
 Mentor rubric (9):
