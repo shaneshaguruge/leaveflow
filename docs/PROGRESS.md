@@ -16,15 +16,15 @@ Proofs for Phases 6, 7, 8 and 10 were re-run on 2026-09-21; the Docker (Phase 7)
 | 3 Build v0 | 7 | 0 | 0 | 7 |
 | 4 Git & Collaboration | 6 | 1 | 0 | 7 |
 | 5 The 3-Tier Build | 8 | 0 | 0 | 8 |
-| 6 Testing & Quality | 6 | 0 | 1 | 7 |
+| 6 Testing & Quality | 7 | 0 | 0 | 7 |
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
 | 8 CI/CD | 4 | 1 | 1 | 6 |
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
 | Capstone (rubric 9 + checklist 8) | 0 | 0 | 17 | 17 |
-| **Total** | **55** | **6** | **34** | **95** |
+| **Total** | **56** | **6** | **33** | **95** |
 
-Row check: 55 + 6 + 34 = 95; every row's three columns add up to its total.
+Row check: 56 + 6 + 33 = 95; every row's three columns add up to its total.
 
 ## Phase 0 — Foundations & Setup (7)
 - [ ] I can navigate, create files, and use a pipe in the terminal without looking anything up — self-assessed; not claimed here
@@ -88,7 +88,7 @@ Row check: 55 + 6 + 34 = 95; every row's three columns add up to its total.
 - [x] The ApplyLeaveForm Vitest test passes with vitest run — `cd client && npx vitest run --reporter=verbose` → 23 passed after #43 (7 in `ApplyLeaveForm.test.jsx`; was 12 after #32, 8 before); CI test-client green: run 35587300869, and on PR #32: https://github.com/shaneshaguruge/leaveflow/actions/runs/35591444394
 - [x] The Playwright apply-approve spec passes with webServer booting both apps — `npx playwright test` → 3 passed (12.6s on `feat/apply-submit-cancel`, PR #43, with the US-16, balance-after and "Submit request" steps), incl. "employee applies, manager approves, employee sees APPROVED and her balance change"; not in CI
 - [x] Five written test cases exist, and at least one bug report uses the full template — `grep -cE '^\| TC-0[0-9]' docs/test-cases.md` → 5 (TC-01…TC-05, written, not yet run by hand); `docs/bug-report-001.md` has Steps to reproduce / Expected / Actual
-- [ ] You found, reported, and fixed all three seeded bugs via separate PRs — not done: no bugs have been seeded
+- [x] You found, reported, and fixed all three seeded bugs via separate PRs — **planted by a subagent mentor** on branch `bughunt` (answer key kept outside the repo, opened only after the fixes). Found by exploratory API testing and code reading, 3 of 3 matching the key: BUG-002 overlap off-by-one (PR #46), BUG-003 manager can reject non-reports (PR #47), BUG-004 balance reserves other years' pending leave (PR #48); each with a full report (`docs/bug-report-002…004.md`) and a regression test that fails on the bug and passes with the fix; each PR merged into `bughunt` on green CI; `bughunt` never merged to main and deleted
 
 ## Phase 7 — Local Deployment (Docker) (7)
 - [x] server/Dockerfile builds, with a .dockerignore keeping node_modules and .env out — `docker build -t leaveflow-api:local ./server` exit 0, image **262 MB**; `docker run --rm leaveflow-api:local ls -A /app` → `.env.example eslint.config.js node_modules package-lock.json package.json scripts src` (no `.env`, no `.pgdata`), runs as user `node`, 0 dev dependencies in the image
