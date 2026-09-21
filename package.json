@@ -1,0 +1,11 @@
+{
+  "name": "leaveflow",
+  "private": true,
+  "description": "Repo-root package for the end-to-end suite (Playwright boots server/ and client/).",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  }
+}
