@@ -21,6 +21,7 @@ app.use('/api', require('./routes/auth'));
 app.use('/api/leave-requests', require('./routes/leaveRequests'));
 app.use('/api/balances', require('./routes/balances'));
 app.use('/api/team', require('./routes/team'));
+app.use('/api/reports', require('./routes/reports'));
 
 app.use((req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'No such endpoint' } }));
 app.use(errorHandler);
