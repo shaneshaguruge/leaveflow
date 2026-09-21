@@ -37,7 +37,7 @@ router.post('/', validate([
   const overlap = await pool.query(
     `SELECT id, start_date, end_date FROM leave_requests
      WHERE user_id = $1 AND status IN ('PENDING', 'APPROVED')
-       AND start_date < $3 AND end_date >= $2
+       AND start_date <= $3 AND end_date >= $2
      ORDER BY start_date LIMIT 1`, [userId, start_date, end_date]);
   if (overlap.rowCount) {
     const o = overlap.rows[0];
