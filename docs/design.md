@@ -25,7 +25,7 @@ cancel while pending, and see request status (US-1, 2, 3, 4, 5, 10).
 |---|---|
 | **D1** | **3-tier architecture:** React SPA (browser) → Express API → PostgreSQL. Built first as **v0**: a single Express server with SQLite (Phase 3), then split into three tiers (Phase 5). |
 | **D2** | **4 tables:** `users`, `leave_types`, `leave_requests`, `leave_balances` (per year). Store `used_days`; remaining days are **computed**, never stored. |
-| **D3** | **Request status is a state machine** (enum, not booleans): PENDING → APPROVED / REJECTED (manager), PENDING → CANCELLED (owner). |
+| **D3** | **Request status is a state machine** (enum, not booleans): PENDING → APPROVED / REJECTED (manager or HR_ADMIN), PENDING → CANCELLED (owner). |
 | **D4** | **JSON REST API** under `/api`. One error shape everywhere: `{ "error": { "code", "message" } }`. Full contract: `docs/api.md`. |
 | **D5** | **All business rules and permission checks live in the API**, never in the browser. The browser never talks to the database. |
 | **D6** | **Reports (US-11, US-12, US-13) are queries** over the 4 tables. No extra report tables. |
@@ -44,7 +44,7 @@ cancel while pending, and see request status (US-1, 2, 3, 4, 5, 10).
    │
    └── manager_id → users.id  (a user's manager is another user)
 
- leave_requests.decided_by → users.id  (who approved/rejected)
+ leave_requests.decided_by → users.id  (who approved, rejected or cancelled)
 ```
 
 Every arrow is a foreign key (FK). "1 ──< *" means "one to many".
@@ -122,10 +122,10 @@ Primary key: the combination (`user_id`, `leave_type_id`, `year`) — one row pe
 ## 4. Leave request state machine
 
 ```
-                  approve (manager)
+                  approve (manager or HR_ADMIN)
                ┌───────────────────► APPROVED   (final)
                │
-  new request  │  reject (manager)
+  new request  │  reject (manager or HR_ADMIN)
   ──────► PENDING ─────────────────► REJECTED   (final)
                │
                │  cancel (owner, only while PENDING)
@@ -252,7 +252,7 @@ These are in the SRS but not designed here. They need extra tables later:
 
 | ID | Risk | Impact | Action |
 |---|---|---|---|
-| **R3** | ⚠️ **UNCONFIRMED REQUIREMENT — Q1 approval flow (BLOCKING).** Nadeesha's email says both "team leads approve their own people's leave" **and** "every approval must come to me first". **This design assumes a one-step decision by either the manager or HR_ADMIN** (as the guide builds it in Phase 5), and HR sees all requests. | If the real answer is "only HR approves" or "manager then HR", the state machine needs an extra state (e.g. `MANAGER_APPROVED`), the permissions table changes, and the approve endpoint changes. | Keep Q1 open. Confirm with Nadeesha/mentor **before Phase 3 code** for approvals. Update §4 and §6 when answered. |
+| **R3** | ⚠️ **UNCONFIRMED REQUIREMENT — Q1 approval flow (BLOCKING).** Nadeesha's email says both "team leads approve their own people's leave" **and** "every approval must come to me first". **This design assumes a one-step decision by either the manager or HR_ADMIN** (as the guide builds it in Phase 5), and HR sees all requests. | If the real answer is "only HR approves" or "manager then HR", the state machine needs an extra state (e.g. `MANAGER_APPROVED`), the permissions table changes, and the approve endpoint changes. | **Decided 2026-09-21 by the project:** manager approves their own reports, HR_ADMIN approves anyone, in one step — implemented in Phase 5 C (PR #16). **Still to confirm with Nadeesha**; if she wants "manager then HR", add the extra state and update §4, §6 and `api.md` §3. |
 | R1 | Designing for scale we don't have | Wasted time and more parts to break | Keep the one-server design; revisit only on the trigger in §8 |
 | R2 | Overlapping requests from the same person | Two overlapping requests could both be approved | **Resolved in the contract:** `409 OVERLAPPING_REQUEST`, `docs/api.md` §5. Overlap between *different* team members (the QC problem) is a separate, later feature |
 | R4 | **Q3 unconfirmed:** do weekends and poya days count as leave days? | The balance check (§4 step 3) could deduct the wrong number of days | Assumption: skipped. Confirm; the holiday list is added in Phase 6 |
