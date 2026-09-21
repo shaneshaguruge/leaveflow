@@ -207,7 +207,7 @@ The Must list alone is a usable product.
 |---|---|---|
 | Q1 | **Decided by the project 2026-09-21:** a manager approves or rejects their own reports (`users.manager_id`); HR_ADMIN approves or rejects anyone; one step, no second approval. Built in Phase 5 (PR #16), see `api.md` §3 | Decision recorded — **still to be confirmed with Nadeesha** (if she wants "manager then HR", add a state; `design.md` R3) |
 | Q2 | Unused days expire on Dec 31 | **Unconfirmed** |
-| Q3 | Weekends and poya days are skipped (not counted) | Unconfirmed |
+| Q3 | Weekends and poya days are skipped (not counted) | **Confirmed** by Nadeesha in the Capstone story review (2026-09-22): weekends and public holidays, including poya days, are not counted |
 | Q4 | Yes, sick leave can be applied up to 7 days after | **Unconfirmed** |
 | Q5 | Report = one row per employee, columns per leave type | Unconfirmed |
 
