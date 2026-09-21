@@ -114,6 +114,15 @@ describe('GET /api/leave-requests', () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(2);
   });
+
+  test('each request carries the employee name (HR All requests shows names, not ids)', async () => {
+    await apply(await loginAs(RUWAN), { start_date: '2026-06-08', end_date: '2026-06-09' });
+    await apply(await loginAs(ISHARA), { start_date: '2026-06-10', end_date: '2026-06-11' });
+    const hr = await request(app).get('/api/leave-requests').set('Authorization', `Bearer ${await loginAs(DILINI)}`);
+    expect(hr.body.map((r) => [r.user_id, r.employee_name]).sort()).toEqual([[1, 'Ruwan Jayasuriya'], [2, 'Ishara Fernando']]);
+    const own = await request(app).get('/api/leave-requests').set('Authorization', `Bearer ${await loginAs(ISHARA)}`);
+    expect(own.body.map((r) => r.employee_name)).toEqual(['Ishara Fernando']); // still only her own
+  });
 });
 
 describe('PATCH /api/leave-requests/:id', () => {

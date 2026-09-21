@@ -79,8 +79,9 @@ reports), US-14–15. There is **no DELETE** endpoint: cancelling is `PATCH {"ac
 ```
 
 ### GET /leave-requests
-EMPLOYEE / MANAGER → only their own requests; HR_ADMIN → every request. Newest first. Each item is a full row:
-`id, user_id, leave_type_id, start_date, end_date, reason, status, decided_by, decided_at, created_at`
+EMPLOYEE / MANAGER → only their own requests; HR_ADMIN → every request. Newest first. Each item is a full row plus
+the requester's name:
+`id, user_id, employee_name, leave_type_id, start_date, end_date, reason, status, decided_by, decided_at, created_at`
 (dates `YYYY-MM-DD`; timestamps ISO 8601 UTC).
 
 ### POST /leave-requests
