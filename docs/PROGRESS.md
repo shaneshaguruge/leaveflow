@@ -13,17 +13,17 @@ Proofs for Phases 6, 7, 8 and 10 were re-run on 2026-09-21; the Docker (Phase 7)
 | 1 Requirements | 7 | 0 | 0 | 7 |
 | 2 Design & Modeling | 6 | 1 | 0 | 7 |
 | 3 Build v0 | 7 | 0 | 0 | 7 |
-| 4 Git & Collaboration | 5 | 0 | 2 | 7 |
+| 4 Git & Collaboration | 4 | 1 | 2 | 7 |
 | 5 The 3-Tier Build | 7 | 0 | 1 | 8 |
 | 6 Testing & Quality | 6 | 0 | 1 | 7 |
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
-| 8 CI/CD | 4 | 1 | 1 | 6 |
+| 8 CI/CD | 4 | 0 | 2 | 6 |
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
 | Capstone (rubric 9 + checklist 8) | 0 | 0 | 17 | 17 |
-| **Total** | **53** | **5** | **37** | **95** |
+| **Total** | **52** | **5** | **38** | **95** |
 
-Row check: 53 + 5 + 37 = 95; every row's three columns add up to its total.
+Row check: 52 + 5 + 38 = 95; every row's three columns add up to its total.
 
 ## Phase 0 — Foundations & Setup (7)
 - [ ] I can navigate, create files, and use a pipe in the terminal without looking anything up — self-assessed; not claimed here
@@ -63,12 +63,12 @@ Row check: 53 + 5 + 37 = 95; every row's three columns add up to its total.
 
 ## Phase 4 — Git & Collaboration (7)
 - [x] .gitignore excludes node_modules/, *.db, and .env, and none of them appear in the repo on GitHub — GitHub tree scan: 0 of 105 paths match
-- [x] The full LeaveFlow repo is on GitHub and a fresh clone runs with npm install && npm run dev — needed `--ignore-scripts` while better-sqlite3 was installed; plain `npm ci` works since PR #15
+- [~] The full LeaveFlow repo is on GitHub and a fresh clone runs with npm install && npm run dev — **per folder, not from the repo root**: re-run 2026-09-21 on a fresh clone of `58cc6ed`: at the root `npm run dev` → `npm error Missing script: "dev"` (the root package only holds Playwright); in `server/` `npm install` + `.env` from `.env.example` + `npm run db` + `npm run migrate` (001–005) + `npm run dev` → `/api/health` 200; in `client/` `npm install` + `npm run dev` → page 200 and login through the Vite proxy 200
 - [ ] feat/cancel-leave was merged through a reviewed PR with a What/Why/How-to-test description — **needs mentor review** (PR #11 has the description and is merged, but no human reviewed it)
 - [ ] You responded to every review comment and hardened the cancel guard against non-PENDING requests — **needs mentor review** (the guard is hardened; there are no review comments to answer)
 - [x] You created, resolved, and committed a real merge conflict with no markers left behind — PR #13
 - [x] The Phase 1 backlog exists as GitHub issues with US-IDs, and at least one PR closed one via Closes #N — issues #1–#10; #5 closed by PR #11
-- [x] You commit to it: from now on, every change to LeaveFlow goes through a branch and a PR — PRs #11–#28; nothing pushed to `main` directly, and since 2026-09-21 branch protection enforces it
+- [x] You commit to it: from now on, every change to LeaveFlow goes through a branch and a PR — PRs #11–#43; nothing pushed to `main` directly, and since 2026-09-21 branch protection enforces it
 
 ## Phase 5 — The 3-Tier Build (8)
 - [x] Postgres 16 runs in Docker with a named volume, and npm run migrate is a no-op on the second run — `postgres:16` in Compose with volume `leaveflow_dbdata`; `docker compose exec api npm run migrate` applied 001–004 and the second run applied nothing (2026-09-21)
@@ -82,10 +82,10 @@ Row check: 53 + 5 + 37 = 95; every row's three columns add up to its total.
 
 ## Phase 6 — Testing & Quality (7)
 - [x] leaveDays is extracted to server/src/lib/leaveDays.js and the routes call it — `grep -n "require('../lib/leaveDays')" server/src/routes/*.js` → `balances.js:5`, `leaveRequests.js:6`
-- [x] The Jest unit suite passes, including the (fixed) Vesak poya holiday case — `cd server && npx jest --runInBand --json` → 43 passed, 0 failed (2026-09-21, after #30 reject tests and #32 US-16; was 32 after #27/#28), incl. "leaveDays excludes Vesak poya from a spanning request"; CI test-api green on `main` @ `7ae5945`: https://github.com/shaneshaguruge/leaveflow/actions/runs/35587300869
+- [x] The Jest unit suite passes, including the (fixed) Vesak poya holiday case — `cd server && npx jest --runInBand --json` → 54 passed, 0 failed (2026-09-21, after the wireframe PRs #39–#43; 43 after #32, 32 after #27/#28), incl. "leaveDays excludes Vesak poya from a spanning request"; CI test-api green on `main` @ `11ee499`: https://github.com/shaneshaguruge/leaveflow/actions/runs/35630556232
 - [x] Supertest covers the leave-request happy path plus 400, 401, and 403, against a separate leaveflow_test database — same run, `DATABASE_URL=…/leaveflow_test`: "happy path: employee applies, sees it listed, manager approves, balance is deducted", "rejects end_date before start_date with 400", "rejects a missing token with 401", "forbids an EMPLOYEE approving a request with 403" all PASS
-- [x] The ApplyLeaveForm Vitest test passes with vitest run — `cd client && npx vitest run --reporter=verbose` → 12 passed (5 in `ApplyLeaveForm.test.jsx`, 4 in `TeamWeekPanel.test.jsx`; was 8 before #32); CI test-client green: run 35587300869, and on PR #32: https://github.com/shaneshaguruge/leaveflow/actions/runs/35591444394
-- [x] The Playwright apply-approve spec passes with webServer booting both apps — `npx playwright test` → 3 passed (10.1s on `feat/team-week-view`, PR #32, with the US-16 assertions; 8.8s in the 2026-09-21 audit), incl. "employee applies, manager approves, employee sees APPROVED and her balance change"; not in CI
+- [x] The ApplyLeaveForm Vitest test passes with vitest run — `cd client && npx vitest run --reporter=verbose` → 23 passed after #43 (7 in `ApplyLeaveForm.test.jsx`; was 12 after #32, 8 before); CI test-client green: run 35587300869, and on PR #32: https://github.com/shaneshaguruge/leaveflow/actions/runs/35591444394
+- [x] The Playwright apply-approve spec passes with webServer booting both apps — `npx playwright test` → 3 passed (12.6s on `feat/apply-submit-cancel`, PR #43, with the US-16, balance-after and "Submit request" steps), incl. "employee applies, manager approves, employee sees APPROVED and her balance change"; not in CI
 - [x] Five written test cases exist, and at least one bug report uses the full template — `grep -cE '^\| TC-0[0-9]' docs/test-cases.md` → 5 (TC-01…TC-05, written, not yet run by hand); `docs/bug-report-001.md` has Steps to reproduce / Expected / Actual
 - [ ] You found, reported, and fixed all three seeded bugs via separate PRs — needs mentor to seed the bugs
 
@@ -101,10 +101,10 @@ Row check: 53 + 5 + 37 = 95; every row's three columns add up to its total.
 ## Phase 8 — CI/CD (6)
 - [x] .github/workflows/ci.yml runs lint, test-api (with a Postgres service container), and test-client on every PR — all three jobs on every PR since CI existed: #22 run 35573736031, #23 35574142412, #24 35574409911, #25 35576412097, #26 35585472714, #27 35586869264 (red, fire drill) → 35587000556 (green), #28 35587224918
 - [ ] You can explain why CI uses npm ci and why runners being disposable makes green trustworthy — yours to answer
-- [x] release.yml pushes ghcr.io/…/leaveflow-api tagged with the SHA and :main on every merge — every merge since #22; latest https://github.com/shaneshaguruge/leaveflow/actions/runs/35587300686 pushed `:7ae59450125872e2c65aa992903beab55b06c2e1` and `:main`
-- [~] Branch protection on main requires all three checks plus one review — applied 2026-09-21 and read back: `checks=["lint","test-api","test-client"]`, `pr_required=true`, **`approvals=0`** (solo developer: one approval would lock the owner out; the review rule is left as a note for the mentor), `enforce_admins=false`, force pushes and deletions blocked
+- [x] release.yml pushes ghcr.io/…/leaveflow-api tagged with the SHA and :main on every merge — every merge since #22; latest https://github.com/shaneshaguruge/leaveflow/actions/runs/35630556191 pushed `:11ee4994b4f763fe2580a2ee85d944340347b8e7` and `:main`
+- [ ] Branch protection on main requires all three checks plus one review — **the "one review" part is not met** (needs a human reviewer, so not claimed). Applied 2026-09-21 and read back: `checks=["lint","test-api","test-client"]`, `pr_required=true`, **`approvals=0`** (solo developer: one approval would lock the owner out; the review rule is left as a note for the mentor), `enforce_admins=false`, force pushes and deletions blocked
 - [x] You ran the fire drill: red X blocked the merge, you read the log, fixed it, and green unlocked it — PR #27: `test-api` failed (run 35586869264), `mergeStateStatus=BLOCKED`, `gh pr merge` refused ("the base branch policy prohibits the merge"); log `Expected: 5, Received: 3` at `newYearWeek.test.js:6`; fixed the expectation → green (run 35587000556), `mergeStateStatus=CLEAN`, merged without `--admin`; only the corrected test is on `main`
-- [x] The image with your latest merge SHA is visible under the repo's Packages — https://github.com/shaneshaguruge/leaveflow/pkgs/container/leaveflow-api (HTTP 200); `docker pull …:1bed2064e474…` and `…:main` gave the same image id `sha256:679518c5…`, and the app loads from it
+- [x] The image with your latest merge SHA is visible under the repo's Packages — https://github.com/shaneshaguruge/leaveflow/pkgs/container/leaveflow-api (HTTP 200); latest merge `11ee499` pushed as `:11ee4994b4f7…` and `:main` (https://github.com/shaneshaguruge/leaveflow/actions/runs/35630556191); earlier `docker pull …:1bed2064e474…` and `…:main` gave the same image id `sha256:679518c5…`, and the app loads from it
 
 ## Phase 9 — Cloud Deployment (8)
 - [ ] LeaveFlow (API + client) is live on Render over HTTPS, migrations run via the shell — plan in `docs/deploy-render.md`, not deployed
