@@ -227,9 +227,18 @@ The Must list alone is a usable product.
 
 ## 7. Wireframes (low-fi)
 
-> **Evidence required:** the Week 2 guide asks for a **paper sketch, photographed**, as evidence
-> (checklist: "A paper wireframe of the Apply-for-leave screen exists (photo saved)").
-> The text versions below are drafts only. **No paper photo exists yet — still to do.**
+> **Evidence:** the guide asks for a **paper sketch, photographed** (checklist: "A paper wireframe of the
+> Apply-for-leave screen exists (photo saved)"). **Done 2026-09-21** — five paper wireframes, photographed:
+
+| Screen | Photo | Stories |
+|---|---|---|
+| Log in | [`wireframes/login.jpeg`](wireframes/login.jpeg) | US-1 (same message for wrong email or password) |
+| Apply for leave | [`wireframes/apply-for-leave.jpeg`](wireframes/apply-for-leave.jpeg) | US-2, US-3 |
+| Pending approvals (manager) — Lab 3 | [`wireframes/manager-approvals.jpeg`](wireframes/manager-approvals.jpeg) | US-4, US-16 ("Team that week") |
+| My requests | [`wireframes/my-requests.jpeg`](wireframes/my-requests.jpeg) | US-3, US-5, US-10 |
+| All requests (HR) | [`wireframes/hr-all-requests.jpeg`](wireframes/hr-all-requests.jpeg) | US-9, US-12 (Export CSV) |
+
+> The text versions below were the first drafts; the photos are the reference.
 
 ### Apply for leave (employee)
 ```

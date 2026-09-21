@@ -1,13 +1,13 @@
 # LeaveFlow — Status
 
 **Last updated:** 2026-09-21 · **Stopped at:** stale docs refreshed + US-4 reject test (PR #30); Nadeesha's overlap feature US-16 built through story → PR #32 → CI. Not deployed anywhere (no staging, no prod).
-Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **51 done · 6 done differently · 38 not done**. No PR has been reviewed by a human.
+Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **53 done · 5 done differently · 37 not done**. No PR has been reviewed by a human.
 
 | Phase | Done | Done differently | Not done | Total |
 |---|---:|---:|---:|---:|
 | 0 Foundations & Setup | 4 | 2 | 1 | 7 |
-| 1 Requirements | 6 | 0 | 1 | 7 |
-| 2 Design & Modeling | 5 | 2 | 0 | 7 |
+| 1 Requirements | 7 | 0 | 0 | 7 |
+| 2 Design & Modeling | 6 | 1 | 0 | 7 |
 | 3 Build v0 | 7 | 0 | 0 | 7 |
 | 4 Git & Collaboration | 5 | 0 | 2 | 7 |
 | 5 The 3-Tier Build | 7 | 0 | 1 | 8 |
@@ -17,7 +17,7 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
 | Capstone (rubric 9 + checklist 8) | 0 | 0 | 17 | 17 |
-| **Total** | **51** | **6** | **38** | **95** |
+| **Total** | **53** | **5** | **37** | **95** |
 
 ## Completed
 - Phase 0: Git 2.53.0 configured (`shaneshaguruge` / `shanesha@arozentech.com`, `main`, `autocrlf=input`); Node v24.14.0; npm 11.19.1; VS Code + 4 extensions; `gh` logged in.
@@ -51,9 +51,10 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Phase 10 overlap feature (US-16, issue #31, PR #32): `GET /api/team/requests?from=&to=` returns APPROVED leave of the manager's own reports (HR_ADMIN: everyone) overlapping the range; EMPLOYEE 403; parameterized SQL. "Team that week" panel on each Approvals card, empty state "No one else is off". Seed 005 adds Kasun Perera (Ruwan's 2nd report). Jest 43/43, Vitest 12/12, Playwright 3/3 locally; CI https://github.com/shaneshaguruge/leaveflow/actions/runs/35591444394. Live curl: 200 `[{"employee_name":"Kasun Perera",…}]`, 200 `[]`, 403, 400, 401. **Not in staging or prod** — the Phase 10 checkbox stays unticked.
 - US-4 reject now has automated tests: "US-4 reject: the manager rejects a PENDING request, nothing is deducted, and the decision is final" and "forbids an EMPLOYEE rejecting a request with 403" — Jest 34/34 locally.
 
+- Phase 1–2: five paper wireframes committed to `docs/wireframes/` (login, apply-for-leave, manager-approvals, my-requests, hr-all-requests); paper state machine and sequence diagram in `docs/diagrams/`; the old digital `sequence-diagram.png`, `state-machine.jpg` and `state-machine.png` removed. Phase 1 is 7/7.
+
 ## Skipped or blocked, and why
 - Phase 0 `ssh -T git@github.com`: not reached — key generated, not added to GitHub; HTTPS via `gh` used instead.
-- Phase 1 paper wireframe photo: in progress by the user (not yet committed).
 - Mentor review of PRs #11–#32: needs mentor — no PR has been reviewed by a human; leaves Phase 4 items 3–4 and Phase 5 item 8 unticked.
 - Phase 6 three seeded bugs: needs mentor.
 - Phase 6 manual execution of TC-01…TC-05: not reached — written, marked "not run yet".
@@ -67,8 +68,7 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 
 ## Still to do, and who
 - Phase 0 — [me] add the SSH key to GitHub (optional); [me] self-assess terminal fluency.
-- Phase 1 — [me] commit `docs/wireframes/apply-for-leave.jpg` via a PR, then tick the box.
-- Phase 2 — [me] decide on the uncommitted paper diagrams in `docs/` (the paper sequence diagram still needs its final 201 arrow).
+- Phase 2 — [me] add the final `201 Created` arrow (API → Browser) to the paper sequence diagram, re-photograph it and replace `docs/diagrams/sequence-diagram.jpeg` via a PR.
 - Phase 4–5 — [mentor] review merged PRs #11–#32; [me] ask Nadeesha to confirm Q1 and R5 (HR approving own leave).
 - Phase 6 — [mentor] seed three bugs; [me] find, report and fix them via PRs; [me] run TC-01…TC-05 by hand.
 - Phase 7 — [me] log in once in the browser at http://localhost:8080 to complete the new-machine item.
@@ -80,7 +80,6 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 ## Known issues
 - Docker Desktop crashed on start: `starting services: initializing Inference manager: listening on unix://<HOME>\AppData\Local\Docker\run\dockerInference: remove …: The file cannot be accessed by the system.` Fixed by the user on 2026-09-21; a leftover folder `%LOCALAPPDATA%\Docker\run.stale-20260921` with two stale socket files remains.
 - Running `npm ci` in `server/` while `npm run db` is running fails (EPERM on the Postgres binaries in `node_modules/@embedded-postgres`); stop the DB first or use `npm install`.
-- `docs/requirements.md` §7 says "No paper photo exists yet" — true until the wireframe PR lands.
 - `server/src/lib/holidays.js`: 2026-05-02 marked `TODO verify`; only 2026 is loaded.
 - The client's live "= N working days" line counts weekends only; the server also excludes holidays and is the authority.
 - HR "All requests" page shows `Employee #id` — the list endpoint returns no employee names.
