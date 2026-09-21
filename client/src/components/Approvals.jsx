@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { plural, workingDays } from '../leaveDays';
 import { typeName } from '../leaveTypes';
+import TeamWeekPanel from './TeamWeekPanel';
 
 export default function Approvals() {
   const [pending, setPending] = useState(null);
@@ -46,6 +47,7 @@ export default function Approvals() {
               </div>
               <div className="muted">{r.start_date} → {r.end_date}{r.reason ? ` · ${r.reason}` : ''}</div>
             </div>
+            <TeamWeekPanel from={r.start_date} to={r.end_date} />
             <div className="item-actions">
               <button type="button" className="btn btn-primary" disabled={busyId === r.id}
                 onClick={() => decide(r.id, 'approve')}>Approve</button>

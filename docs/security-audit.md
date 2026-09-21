@@ -21,9 +21,9 @@ real output. Where something could not be verified, the row says so.
 
 | Check | Command | Result |
 |---|---|---|
-| Count query calls in routes | `grep -rn "query(" server/src/routes/ \| wc -l` | `21` |
-| Count query calls in all server code | `grep -rn "query(" server/src/ \| wc -l` | `25` (21 in routes + 4 in `db/migrate.js`; re-run 2026-09-21) |
-| Any `${…}` inside a SQL string passed to `query(` (multi-line aware) | Node script: regex over every `query(<literal>` in `server/src/{routes,db,middleware}/*.js`, flag `${` inside the literal | `query() calls with literal SQL: 24 with ${} interpolation: 0` — 24 of the 25 calls; the 25th is the non-literal one in `db/migrate.js` (next rows). Re-run 2026-09-21: same result |
+| Count query calls in routes | `grep -rn "query(" server/src/routes/ \| wc -l` | `22` (was 21; +1 for the US-16 overlap query in `team.js`, PR #32) |
+| Count query calls in all server code | `grep -rn "query(" server/src/ \| wc -l` | `26` (22 in routes + 4 in `db/migrate.js`; re-run 2026-09-21 after PR #32) |
+| Any `${…}` inside a SQL string passed to `query(` (multi-line aware) | Node script: regex over every `query(<literal>` in `server/src/{routes,db,middleware}/*.js`, flag `${` inside the literal | `query() calls with literal SQL: 25 with ${} interpolation: 0` (re-run 2026-09-21 after PR #32; was 24 before it) — 25 of the 26 calls; the 26th is the non-literal one in `db/migrate.js` (next rows) |
 | Any `${…}` in routes at all | `grep -rnE '\$\{[^}]*\}' server/src/routes/` | 2 hits, both **error messages**, not SQL: `leaveRequests.js:50` (`OVERLAPPING_REQUEST` text) and `:64` (`INSUFFICIENT_BALANCE` text) |
 | String concatenation into `query(` | `grep -rnE "query\([^)]*\+ " server/src/` | no output |
 | Non-literal SQL | `grep -rnE "query\(\s*[^\`'\" ]" server/src/ server/scripts/` | 1 hit: `db/migrate.js:11` runs the `.sql` migration files from the repo — no user input |
