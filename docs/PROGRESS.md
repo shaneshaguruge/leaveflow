@@ -10,7 +10,7 @@ Proofs for Phases 6, 7, 8 and 10 were re-run on 2026-09-21; the Docker (Phase 7)
 
 | Phase | Done `[x]` | Done differently `[~]` | Not done `[ ]` | Total |
 |---|---:|---:|---:|---:|
-| 0 Foundations & Setup | 4 | 2 | 1 | 7 |
+| 0 Foundations & Setup | 5 | 2 | 0 | 7 |
 | 1 Requirements | 7 | 0 | 0 | 7 |
 | 2 Design & Modeling | 6 | 1 | 0 | 7 |
 | 3 Build v0 | 7 | 0 | 0 | 7 |
@@ -18,16 +18,16 @@ Proofs for Phases 6, 7, 8 and 10 were re-run on 2026-09-21; the Docker (Phase 7)
 | 5 The 3-Tier Build | 8 | 0 | 0 | 8 |
 | 6 Testing & Quality | 7 | 0 | 0 | 7 |
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
-| 8 CI/CD | 4 | 1 | 1 | 6 |
+| 8 CI/CD | 5 | 1 | 0 | 6 |
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
 | Capstone (rubric 9 + checklist 8) | 0 | 0 | 17 | 17 |
-| **Total** | **56** | **6** | **33** | **95** |
+| **Total** | **58** | **6** | **31** | **95** |
 
-Row check: 56 + 6 + 33 = 95; every row's three columns add up to its total.
+Row check: 58 + 6 + 31 = 95; every row's three columns add up to its total.
 
 ## Phase 0 — Foundations & Setup (7)
-- [ ] I can navigate, create files, and use a pipe in the terminal without looking anything up — self-assessed; not claimed here
+- [x] I can navigate, create files, and use a pipe in the terminal without looking anything up — self-assessed by the developer (2026-09-22); also shown in practice: pipe lab `ls lab0/*.txt | wc -l` → `3`
 - [x] `git --version` works and my name/email are configured globally — git 2.53.0, `shaneshaguruge` / `shanesha@arozentech.com`
 - [~] `node -v` prints v20.x in a freshly opened terminal — **v24.14.0** on purpose: Node 20 reached end-of-life in April 2026
 - [x] `docker run --rm hello-world` succeeds — passed as `Shanesha` on 2026-09-21 ("Hello from Docker!", exit 0; client/server 29.2.1) after joining `docker-users`
@@ -101,7 +101,7 @@ Row check: 56 + 6 + 33 = 95; every row's three columns add up to its total.
 
 ## Phase 8 — CI/CD (6)
 - [x] .github/workflows/ci.yml runs lint, test-api (with a Postgres service container), and test-client on every PR — all three jobs on every PR since CI existed: #22 run 35573736031, #23 35574142412, #24 35574409911, #25 35576412097, #26 35585472714, #27 35586869264 (red, fire drill) → 35587000556 (green), #28 35587224918
-- [ ] You can explain why CI uses npm ci and why runners being disposable makes green trustworthy — yours to answer
+- [x] You can explain why CI uses npm ci and why runners being disposable makes green trustworthy — answered by the developer (2026-09-22): `npm ci` installs the exact versions in `package-lock.json` (and fails if it disagrees with `package.json`), so every CI build is reproducible; a fresh, disposable runner has no leftovers from earlier runs, so green means the code passes from a clean start
 - [x] release.yml pushes ghcr.io/…/leaveflow-api tagged with the SHA and :main on every merge — every merge since #22; latest https://github.com/shaneshaguruge/leaveflow/actions/runs/35630556191 pushed `:11ee4994b4f763fe2580a2ee85d944340347b8e7` and `:main`
 - [~] Branch protection on main requires all three checks plus one review — all three checks + PR required; **0 required approvals** because there is no second reviewer (GitHub does not let an author approve their own PR) — no human reviewer; self-reviewed. Applied 2026-09-21 and read back: `checks=["lint","test-api","test-client"]`, `pr_required=true`, **`approvals=0`** (solo developer: one approval would lock the owner out), `enforce_admins=false`, force pushes and deletions blocked
 - [x] You ran the fire drill: red X blocked the merge, you read the log, fixed it, and green unlocked it — PR #27: `test-api` failed (run 35586869264), `mergeStateStatus=BLOCKED`, `gh pr merge` refused ("the base branch policy prohibits the merge"); log `Expected: 5, Received: 3` at `newYearWeek.test.js:6`; fixed the expectation → green (run 35587000556), `mergeStateStatus=CLEAN`, merged without `--admin`; only the corrected test is on `main`

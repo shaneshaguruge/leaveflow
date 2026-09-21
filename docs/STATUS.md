@@ -1,12 +1,12 @@
 # LeaveFlow — Status
 
 **Last updated:** 2026-09-21 · **Stopped at:** paper wireframes committed (PR #33) and the five wireframe gaps closed (PRs #39–#43); `main` = `11ee499`, CI and Release green. Not deployed anywhere (no staging, no prod).
-Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **56 done · 6 done differently · 33 not done**.
+Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **58 done · 6 done differently · 31 not done**.
 **How reviewer items are ticked:** there is no human reviewer on this project; items that need a review are ticked when the work is done — no human reviewer; self-reviewed.
 
 | Phase | Done | Done differently | Not done | Total |
 |---|---:|---:|---:|---:|
-| 0 Foundations & Setup | 4 | 2 | 1 | 7 |
+| 0 Foundations & Setup | 5 | 2 | 0 | 7 |
 | 1 Requirements | 7 | 0 | 0 | 7 |
 | 2 Design & Modeling | 6 | 1 | 0 | 7 |
 | 3 Build v0 | 7 | 0 | 0 | 7 |
@@ -14,11 +14,11 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 | 5 The 3-Tier Build | 8 | 0 | 0 | 8 |
 | 6 Testing & Quality | 7 | 0 | 0 | 7 |
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
-| 8 CI/CD | 4 | 1 | 1 | 6 |
+| 8 CI/CD | 5 | 1 | 0 | 6 |
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
 | Capstone (rubric 9 + checklist 8) | 0 | 0 | 17 | 17 |
-| **Total** | **56** | **6** | **33** | **95** |
+| **Total** | **58** | **6** | **31** | **95** |
 
 ## Completed
 - Phase 0: Git 2.53.0 configured (`shaneshaguruge` / `shanesha@arozentech.com`, `main`, `autocrlf=input`); Node v24.14.0; npm 11.19.1; VS Code + 4 extensions; `gh` logged in.
@@ -62,6 +62,8 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 
 - Project docs (2026-09-22): root `README.md` (run with/without Docker, demo logins, tests), `CHANGELOG.md` (by phase, real PRs and merge times), `docs/decisions.md` (ADR-1…9), `docs/README.md` (index of every doc), `docs/bug-reports.md` (BUG-001…004); stale lines fixed in `security-audit.md` (27 `query(` calls), `api.md`, `requirements.md`, `branch-protection.md`, `runbook.md`, `postmortem-template.md`, bug reports 002–004; `npm run db` now also creates `leaveflow_e2e`.
 
+- Phase 0 terminal self-assessment and Phase 8 "why npm ci" ticked 2026-09-22 on the developer's own answers (npm ci = exact lockfile versions, reproducible builds; disposable runners = clean start).
+
 ## Skipped or blocked, and why
 - Phase 0 `ssh -T git@github.com`: not reached — key generated, not added to GitHub; HTTPS via `gh` used instead.
 - Phase 6 manual execution of TC-01…TC-05: not reached — written, marked "not run yet".
@@ -73,13 +75,12 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Capstone: not reached.
 
 ## Still to do, and who
-- Phase 0 — [me] add the SSH key to GitHub (optional); [me] self-assess terminal fluency.
+- Phase 0 — [me] add the SSH key to GitHub (optional).
 - Phase 2 — [me] add the final `201 Created` arrow (API → Browser) to the paper sequence diagram, re-photograph it and replace `docs/diagrams/sequence-diagram.jpeg` via a PR.
 - Phase 4 — [me] optional: a README and a root `dev` script so `npm install && npm run dev` works from the repo root.
 - Phase 4–5 — [me] ask Nadeesha to confirm Q1 and R5 (HR approving own leave).
 - Phase 6 — [me] run TC-01…TC-05 by hand.
 - Phase 7 — [me] log in once in the browser at http://localhost:8080 to complete the new-machine item.
-- Phase 8 — [me] answer "why npm ci".
 - Phase 9 — [me] Render/AWS accounts with a $10 budget alarm first, then `deploy-render.md` / `deploy-aws.md`; execute the teardown checklist.
 - Phase 10 — [me] CloudWatch 5xx alarm, restore drill, ship US-16 to staging then prod (after Phase 9) and reply to Nadeesha with the live link; [me] ask Nadeesha whether overlapping leave should also *warn* or *block*; [me] staged incident.
 - Capstone — [me] half-day leave + holiday calendar.
