@@ -15,6 +15,7 @@ queries) are in [`design.md`](design.md) §2 and are not repeated here. Dates an
 | 7 Branch protection with 0 required approvals | 2026-09-21 | GitHub API, before PR #27 | Accepted |
 | 8 Node 24 instead of Node 20 | 2026-09-21 | environment (Phase 0) | Accepted |
 | 9 Proxy trust from the `TRUST_PROXY` env var | 2026-09-21 | PR #20 | Accepted |
+| 10 Half days as `day_part` (FULL/AM/PM), holidays as a table keyed by date | 2026-09-22 | Capstone design PR | Accepted |
 
 ## ADR-1 PostgreSQL instead of SQLite
 
@@ -87,3 +88,13 @@ queries) are in [`design.md`](design.md) §2 and are not repeated here. Dates an
 - **Why:** behind nginx, Render or CloudFront every request looks like it comes from the proxy, so the login rate limit
   would be shared by all users. An env var lets each environment set its hop count without code changes
   (Compose sets `1`). Unset, `X-Forwarded-For` is ignored and cannot be spoofed.
+
+## ADR-10 Half days as `day_part`; public holidays as a table keyed by date
+
+- **Context:** Capstone (Nadeesha): morning/afternoon half days costing 0.5, and a holiday calendar HR maintains.
+- **Decision:** `leave_requests.day_part` (`FULL`/`AM`/`PM`, default `FULL`) describes the request's last day;
+  `public_holidays(holiday_date PRIMARY KEY, name, year generated)` replaces the hard-coded list.
+- **Why not a `half_day` boolean:** it can't say which half (AM + PM on one date would clash; managers can't see
+  AM/PM) and is ambiguous on multi-day requests. **Why the date as key:** a date is a holiday or not; a surrogate id or
+  `(date, name)` could count one date twice.
+- **Details:** [`capstone/design.md`](capstone/design.md).
