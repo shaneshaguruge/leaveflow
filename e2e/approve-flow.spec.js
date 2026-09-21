@@ -50,6 +50,11 @@ test('employee applies, manager approves, employee sees APPROVED and her balance
   await ruwan.getByRole('navigation').getByRole('button', { name: 'Approvals' }).click();
   const inbox = ruwan.getByRole('listitem').filter({ hasText: reason });
   await expect(inbox).toContainText('Ishara Fernando');
+  // US-16: before deciding, Ruwan sees who else on his team is off. Nobody overlaps 5–7 Oct...
+  await expect(inbox.getByRole('region', { name: 'Team that week' })).toContainText('No one else is off');
+  // ...while the seeded Bank appointment (16 Nov) overlaps Kasun's seeded approved leave (16–18 Nov).
+  const bankDay = ruwan.getByRole('listitem').filter({ hasText: 'Bank appointment' });
+  await expect(bankDay.getByRole('region', { name: 'Team that week' })).toContainText('Kasun Perera');
   await inbox.getByRole('button', { name: 'Approve' }).click();
   await expect(inbox).toHaveCount(0); // refetched: no longer pending
 

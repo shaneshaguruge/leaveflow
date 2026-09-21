@@ -89,6 +89,14 @@ RULE-3 Shutdown-week days are company holiday and must not be deducted
 US-15 As an HR admin, I want to set company shutdown dates each year,
       so that the New Year block updates without a developer.
 
+### Change request from Nadeesha (Phase 10, issue #31)
+
+> "Small request: when a manager opens an approval, can they see WHO ELSE on the team is already off that
+> week? Dilini approved two overlapping leaves last month and packing was short-staffed for three days."
+
+US-16 As a manager, when reviewing a request, I want to see approved leaves from my reports that
+      overlap its dates, so that I don't leave the team short-staffed.
+
 ---
 
 ## 3. Acceptance criteria (Given / When / Then)
@@ -117,6 +125,24 @@ US-15 As an HR admin, I want to set company shutdown dates each year,
 - **Given** a request is already APPROVED
   **When** anyone tries to approve or reject it again
   **Then** the action is refused — decisions are final
+
+### US-16 Who else is off (reviewing a request)
+- **Given** I am logged in as a manager and my report Ishara has a PENDING request for 16 Nov 2026
+  **And** my other report Kasun has APPROVED leave for 16–18 Nov 2026
+  **When** I open that request on the Approvals screen
+  **Then** a "Team that week" panel lists Kasun Perera, 2026-11-16 → 2026-11-18
+- **Given** someone who is **not** my report has APPROVED leave on those dates
+  **When** I open the request
+  **Then** they are not listed (only my reports; HR_ADMIN, who approves anyone, sees everyone)
+- **Given** a report's overlapping request is PENDING, REJECTED or CANCELLED
+  **When** I open the request
+  **Then** it is not listed (only APPROVED leave counts)
+- **Given** nobody on my team has APPROVED leave overlapping the request
+  **When** I open it
+  **Then** the panel says "No one else is off"
+- **Given** I am logged in as an EMPLOYEE
+  **When** I ask for the team's absences
+  **Then** the API refuses with 403
 
 ### US-11 Finance report
 - **Given** it is the end of 2026 and 60 employees have leave records
@@ -154,7 +180,7 @@ US-15 As an HR admin, I want to set company shutdown dates each year,
 | Priority | Stories |
 |---|---|
 | **Must** | US-1 login, US-2 apply, US-3 balances, US-4 approve/reject, US-5 cancel pending, US-10 request status |
-| **Should** | US-8 email notifications, US-9 HR oversight view, US-11 finance report, RULE-1 medical certificate |
+| **Should** | US-8 email notifications, US-9 HR oversight view, US-11 finance report, RULE-1 medical certificate, US-16 who else is off (built, PR for issue #31) |
 | **Could** | US-6 configure leave types, US-7 team calendar, US-12 export, US-13 unused leave, US-14 upload, US-15 shutdown dates, RULE-2/3 |
 | **Won't (this time)** | Payroll, WhatsApp integration, native mobile app (responsive web instead) |
 

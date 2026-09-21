@@ -44,6 +44,7 @@ Any other 4xx without an app-specific code uses its HTTP status name in the same
 | PATCH | `/leave-requests/:id` | see §3 | 200 | 400, 401, 403, 404, 409 | US-4, US-5 |
 | GET | `/balances` | own balances | 200 | 401 | US-3 |
 | GET | `/team/requests` | MANAGER, HR_ADMIN | 200 | 401, 403 | US-4 |
+| GET | `/team/requests?from=&to=` | MANAGER, HR_ADMIN | 200 | 400, 401, 403 | US-16 |
 
 Any other path under `/api` → `404 {"error":{"code":"NOT_FOUND","message":"No such endpoint"}}`.
 
@@ -126,6 +127,25 @@ EMPLOYEE → `403 FORBIDDEN` "Your role cannot do this".
 200 [{"id":5,"user_id":2,"leave_type_id":1,"start_date":"2026-10-05","end_date":"2026-10-07","reason":"Family visit to Kandy",
       "status":"PENDING","decided_by":null,"decided_at":null,"created_at":"2026-09-21T07:39:42.535Z","employee_name":"Ishara Fernando"}]
 ```
+
+### GET /team/requests?from=YYYY-MM-DD&to=YYYY-MM-DD — who else is off (US-16)
+With both query parameters the same route answers a different question: which **APPROVED** requests overlap
+`from`–`to` (inclusive: `start_date <= to AND end_date >= from`). Same scope as the approvals list: MANAGER →
+their own reports (`users.manager_id`); HR_ADMIN → everyone. PENDING, REJECTED and CANCELLED requests are never
+listed. Ordered by `start_date`, then name. The Approvals screen calls it with each pending request's dates and
+shows the result in a "Team that week" panel; an empty array is shown as "No one else is off".
+```json
+// GET /api/team/requests?from=2026-11-16&to=2026-11-16  (Ruwan; seed 005: Kasun is off 16–18 Nov)
+200 [{"id":5,"user_id":4,"employee_name":"Kasun Perera","leave_type_id":1,"start_date":"2026-11-16","end_date":"2026-11-18","status":"APPROVED"}]
+// nobody off in the range
+200 []
+// EMPLOYEE
+403 {"error":{"code":"FORBIDDEN","message":"Your role cannot do this"}}
+// to before from / to missing or not a date (same for from)
+400 {"error":{"code":"VALIDATION_ERROR","message":"to: must be on or after from"}}
+400 {"error":{"code":"VALIDATION_ERROR","message":"to: must be YYYY-MM-DD"}}
+```
+Both values are bind parameters (`$1`, `$2`), never pasted into the SQL.
 
 ---
 
