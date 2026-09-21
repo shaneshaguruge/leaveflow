@@ -8,5 +8,8 @@ types.setTypeParser(1082, (value) => value);
 types.setTypeParser(1700, (value) => parseFloat(value));
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// An idle client dropped by the server (DB restart, failover) is emitted as 'error' on the pool.
+// Without a listener Node treats it as fatal and the whole API exits; log it and let the pool reconnect.
+pool.on('error', (err) => console.error('idle Postgres client error:', err.code || '', err.message));
 module.exports = pool;
 module.exports.pool = pool; // lets Phase 6's `const { pool } = require(...)` work too

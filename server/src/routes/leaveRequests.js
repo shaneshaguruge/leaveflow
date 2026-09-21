@@ -1,11 +1,10 @@
 const express = require('express');
 const pool = require('../db/pool');
 const { requireAuth } = require('../middleware/auth');
+const { asyncHandler, httpError } = require('../middleware/errors');
+const { validate, required, isDate, onOrAfter } = require('../middleware/validate');
 const router = express.Router();
 router.use(requireAuth);
-
-const fail = (res, status, code, message) => res.status(status).json({ error: { code, message } });
-const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || '') && !Number.isNaN(Date.parse(v));
 
 // Working days between two dates, inclusive, excluding weekends (Phase 6 extracts this).
 function leaveDays(startDate, endDate) {
@@ -20,99 +19,89 @@ function leaveDays(startDate, endDate) {
   return days;
 }
 
-router.get('/', async (req, res, next) => {
-  try {
-    const q = req.user.role === 'HR_ADMIN'
-      ? await pool.query('SELECT * FROM leave_requests ORDER BY created_at DESC')
-      : await pool.query('SELECT * FROM leave_requests WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
-    res.json(q.rows);
-  } catch (err) { next(err); }
-});
+router.get('/', asyncHandler(async (req, res) => {
+  const q = req.user.role === 'HR_ADMIN'
+    ? await pool.query('SELECT * FROM leave_requests ORDER BY created_at DESC')
+    : await pool.query('SELECT * FROM leave_requests WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
+  res.json(q.rows);
+}));
 
-router.post('/', async (req, res, next) => {
-  try {
-    const { leave_type_id, start_date, end_date, reason } = req.body || {};
-    const userId = req.user.id; // always the logged-in user; any user_id in the body is ignored
-    if (!leave_type_id || !start_date || !end_date) {
-      return fail(res, 400, 'VALIDATION_ERROR', 'leave_type_id, start_date and end_date are required');
-    }
-    if (!isDate(start_date) || !isDate(end_date)) {
-      return fail(res, 400, 'VALIDATION_ERROR', 'start_date and end_date must be YYYY-MM-DD');
-    }
-    if (end_date < start_date) {
-      return fail(res, 400, 'VALIDATION_ERROR', 'end_date must be on or after start_date');
-    }
-    const requested = leaveDays(start_date, end_date);
-    if (requested === 0) {
-      return fail(res, 400, 'VALIDATION_ERROR', 'the dates contain no working days');
-    }
+router.post('/', validate([
+  ['leave_type_id', required, 'is required'],
+  ['start_date', isDate, 'must be YYYY-MM-DD'],
+  ['end_date', isDate, 'must be YYYY-MM-DD'],
+  ['end_date', onOrAfter('start_date'), 'must be on or after start_date'],
+]), asyncHandler(async (req, res) => {
+  const { leave_type_id, start_date, end_date, reason } = req.body;
+  const userId = req.user.id; // always the logged-in user; any user_id in the body is ignored
+  const requested = leaveDays(start_date, end_date);
+  if (requested === 0) throw httpError(400, 'VALIDATION_ERROR', 'the dates contain no working days');
 
-    const lt = await pool.query('SELECT annual_allocation FROM leave_types WHERE id = $1', [leave_type_id]);
-    if (!lt.rowCount) return fail(res, 400, 'BAD_TYPE', 'Unknown leave type');
+  const lt = await pool.query('SELECT annual_allocation FROM leave_types WHERE id = $1', [leave_type_id]);
+  if (!lt.rowCount) throw httpError(400, 'BAD_TYPE', 'Unknown leave type');
 
-    const overlap = await pool.query(
-      `SELECT id, start_date, end_date FROM leave_requests
-       WHERE user_id = $1 AND status IN ('PENDING', 'APPROVED')
-         AND start_date <= $3 AND end_date >= $2
-       ORDER BY start_date LIMIT 1`, [userId, start_date, end_date]);
-    if (overlap.rowCount) {
-      const o = overlap.rows[0];
-      return fail(res, 409, 'OVERLAPPING_REQUEST',
-        `These dates overlap your request #${o.id} (${o.start_date} to ${o.end_date})`);
-    }
-
-    const year = Number(start_date.slice(0, 4));
-    const bal = await pool.query(`SELECT used_days FROM leave_balances
-       WHERE user_id = $1 AND leave_type_id = $2 AND year = $3`, [userId, leave_type_id, year]);
-    const used = bal.rowCount ? Number(bal.rows[0].used_days) : 0;
-    const pendingRows = await pool.query(
-      `SELECT start_date, end_date FROM leave_requests
-       WHERE user_id = $1 AND leave_type_id = $2 AND status = 'PENDING'
-         AND EXTRACT(YEAR FROM start_date) = $3`, [userId, leave_type_id, year]);
-    const pending = pendingRows.rows.reduce((sum, r) => sum + leaveDays(r.start_date, r.end_date), 0);
-    const left = lt.rows[0].annual_allocation - used - pending;
-    if (requested > left) {
-      return fail(res, 409, 'INSUFFICIENT_BALANCE', `Only ${Math.max(left, 0)} day(s) of this type left this year`);
-    }
-
-    const ins = await pool.query(`INSERT INTO leave_requests (user_id, leave_type_id, start_date, end_date, reason)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`, [userId, leave_type_id, start_date, end_date, reason || null]);
-    res.status(201).json(ins.rows[0]);
-  } catch (err) { next(err); }
-});
-
-router.patch('/:id', async (req, res, next) => {
-  const { action } = req.body || {}; // 'approve' | 'reject' | 'cancel'
-  if (!['approve', 'reject', 'cancel'].includes(action)) {
-    return fail(res, 400, 'VALIDATION_ERROR', 'action must be "approve", "reject" or "cancel"');
+  const overlap = await pool.query(
+    `SELECT id, start_date, end_date FROM leave_requests
+     WHERE user_id = $1 AND status IN ('PENDING', 'APPROVED')
+       AND start_date <= $3 AND end_date >= $2
+     ORDER BY start_date LIMIT 1`, [userId, start_date, end_date]);
+  if (overlap.rowCount) {
+    const o = overlap.rows[0];
+    throw httpError(409, 'OVERLAPPING_REQUEST', `These dates overlap your request #${o.id} (${o.start_date} to ${o.end_date})`);
   }
-  if (!/^\d+$/.test(req.params.id)) return fail(res, 404, 'NOT_FOUND', 'No such request');
-  let q;
-  try {
-    q = await pool.query(`SELECT lr.user_id, u.manager_id FROM leave_requests lr
-       JOIN users u ON u.id = lr.user_id WHERE lr.id = $1`, [req.params.id]);
-  } catch (err) { return next(err); }
-  if (!q.rowCount) return fail(res, 404, 'NOT_FOUND', 'No such request');
+
+  const year = Number(start_date.slice(0, 4));
+  const bal = await pool.query(`SELECT used_days FROM leave_balances
+     WHERE user_id = $1 AND leave_type_id = $2 AND year = $3`, [userId, leave_type_id, year]);
+  const used = bal.rowCount ? Number(bal.rows[0].used_days) : 0;
+  const pendingRows = await pool.query(
+    `SELECT start_date, end_date FROM leave_requests
+     WHERE user_id = $1 AND leave_type_id = $2 AND status = 'PENDING'
+       AND EXTRACT(YEAR FROM start_date) = $3`, [userId, leave_type_id, year]);
+  const pending = pendingRows.rows.reduce((sum, r) => sum + leaveDays(r.start_date, r.end_date), 0);
+  const left = lt.rows[0].annual_allocation - used - pending;
+  if (requested > left) {
+    throw httpError(409, 'INSUFFICIENT_BALANCE', `Only ${Math.max(left, 0)} day(s) of this type left this year`);
+  }
+
+  const ins = await pool.query(`INSERT INTO leave_requests (user_id, leave_type_id, start_date, end_date, reason)
+     VALUES ($1, $2, $3, $4, $5) RETURNING *`, [userId, leave_type_id, start_date, end_date, reason || null]);
+  res.status(201).json(ins.rows[0]);
+}));
+
+router.patch('/:id', validate([
+  ['action', (v) => ['approve', 'reject', 'cancel'].includes(v), 'must be "approve", "reject" or "cancel"'],
+]), asyncHandler(async (req, res) => {
+  const { action } = req.body;
+  if (!/^\d+$/.test(req.params.id)) throw httpError(404, 'NOT_FOUND', 'No such request');
+  const q = await pool.query(`SELECT lr.user_id, u.manager_id FROM leave_requests lr
+     JOIN users u ON u.id = lr.user_id WHERE lr.id = $1`, [req.params.id]);
+  if (!q.rowCount) throw httpError(404, 'NOT_FOUND', 'No such request');
   const { user_id, manager_id } = q.rows[0];
-  if (action === 'cancel' && user_id !== req.user.id)
-    return fail(res, 403, 'FORBIDDEN', 'Only the owner can cancel');
+  if (action === 'cancel' && user_id !== req.user.id) throw httpError(403, 'FORBIDDEN', 'Only the owner can cancel');
   if (action !== 'cancel') {
-    if (!['MANAGER', 'HR_ADMIN'].includes(req.user.role))
-      return fail(res, 403, 'FORBIDDEN', 'Managers only');
-    if (req.user.role === 'MANAGER' && manager_id !== req.user.id)
-      return fail(res, 403, 'FORBIDDEN', 'Not your report');
+    if (!['MANAGER', 'HR_ADMIN'].includes(req.user.role)) throw httpError(403, 'FORBIDDEN', 'Managers only');
+    if (req.user.role === 'MANAGER' && manager_id !== req.user.id) throw httpError(403, 'FORBIDDEN', 'Not your report');
   }
-  if (action !== 'approve') return decideSimple(req, res, next);
 
+  if (action !== 'approve') { // reject/cancel change one row — no transaction needed
+    const upd = action === 'reject'
+      ? await pool.query(`UPDATE leave_requests SET status = 'REJECTED', decided_by = $1, decided_at = now()
+           WHERE id = $2 AND status = 'PENDING' RETURNING *`, [req.user.id, req.params.id])
+      : await pool.query(`UPDATE leave_requests SET status = 'CANCELLED', decided_by = user_id, decided_at = now()
+           WHERE id = $1 AND status = 'PENDING' RETURNING *`, [req.params.id]);
+    if (!upd.rowCount) throw httpError(409, 'INVALID_STATE', 'Request is not pending');
+    return res.json(upd.rows[0]);
+  }
+
+  // approve: status and balance change together, or not at all
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const upd = await client.query(`UPDATE leave_requests SET status = 'APPROVED',
        decided_by = $1, decided_at = now() WHERE id = $2 AND status = 'PENDING' RETURNING *`,
       [req.user.id, req.params.id]);
-    if (!upd.rowCount) {
-      const e = new Error('Request is not pending'); e.status = 409; e.code = 'INVALID_STATE'; throw e;
-    }
+    if (!upd.rowCount) throw httpError(409, 'INVALID_STATE', 'Request is not pending');
     const r = upd.rows[0];
     const bal = await client.query(`INSERT INTO leave_balances (user_id, leave_type_id, year, used_days)
        VALUES ($1, $2, $3, $4) ON CONFLICT (user_id, leave_type_id, year)
@@ -121,26 +110,16 @@ router.patch('/:id', async (req, res, next) => {
       [r.user_id, r.leave_type_id, Number(r.start_date.slice(0, 4)), leaveDays(r.start_date, r.end_date)]);
     const lt = await client.query('SELECT annual_allocation FROM leave_types WHERE id = $1', [r.leave_type_id]);
     if (Number(bal.rows[0].used_days) > lt.rows[0].annual_allocation) {
-      const e = new Error('Approving this would exceed the annual allocation');
-      e.status = 409; e.code = 'INSUFFICIENT_BALANCE'; throw e;
+      throw httpError(409, 'INSUFFICIENT_BALANCE', 'Approving this would exceed the annual allocation');
     }
     await client.query('COMMIT');
     res.json(r);
-  } catch (err) { await client.query('ROLLBACK'); next(err); }
-  finally { client.release(); }
-});
-
-async function decideSimple(req, res, next) { // reject/cancel change one row — no transaction needed
-  try {
-    const upd = req.body.action === 'reject'
-      ? await pool.query(`UPDATE leave_requests SET status = 'REJECTED', decided_by = $1, decided_at = now()
-           WHERE id = $2 AND status = 'PENDING' RETURNING *`,
-        [req.user.id, req.params.id])
-      : await pool.query(`UPDATE leave_requests SET status = 'CANCELLED', decided_by = user_id, decided_at = now()
-           WHERE id = $1 AND status = 'PENDING' RETURNING *`, [req.params.id]);
-    if (!upd.rowCount) return fail(res, 409, 'INVALID_STATE', 'Request is not pending');
-    res.json(upd.rows[0]);
-  } catch (err) { next(err); }
-}
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}));
 
 module.exports = router;

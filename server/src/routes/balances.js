@@ -1,6 +1,7 @@
 const express = require('express');
 const pool = require('../db/pool');
 const { requireAuth } = require('../middleware/auth');
+const { asyncHandler } = require('../middleware/errors');
 const router = express.Router();
 router.use(requireAuth);
 
@@ -17,8 +18,7 @@ function leaveDays(startDate, endDate) {
   return days;
 }
 
-router.get('/', async (req, res, next) => {
-  try {
+router.get('/', asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const year = new Date().getFullYear();
     const q = await pool.query(
@@ -40,7 +40,6 @@ router.get('/', async (req, res, next) => {
       const pending_days = pendingByType[b.id] || 0;
       return { ...b, used_days, pending_days, remaining_days: b.annual_allocation - used_days - pending_days };
     }));
-  } catch (err) { next(err); }
-});
+}));
 
 module.exports = router;
