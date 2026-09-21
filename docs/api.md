@@ -22,10 +22,13 @@ through the logs; otherwise the server generates one.
 | 403 | I know who you are, and the answer is no | `FORBIDDEN` |
 | 404 | No such thing | `NOT_FOUND` (unknown request id, or unknown endpoint) |
 | 409 | Conflicts with the current state | `OVERLAPPING_REQUEST`, `INSUFFICIENT_BALANCE`, `INVALID_STATE` |
+| 413 | Request body over 100 kB (any endpoint that takes a body) | `PAYLOAD_TOO_LARGE` |
 | 429 | Too many login attempts | `RATE_LIMITED` |
 | 500 | Server bug — not your fault | `INTERNAL`, message always `"Something went wrong"` (details are logged, never returned) |
 
 A body that isn't valid JSON gets `400 VALIDATION_ERROR` ("Request body is not valid JSON").
+A body over 100 kB gets `413 {"error":{"code":"PAYLOAD_TOO_LARGE","message":"Request body is too large (limit 100 kB)"}}`.
+Any other 4xx without an app-specific code uses its HTTP status name in the same style (e.g. `415 UNSUPPORTED_MEDIA_TYPE`).
 
 ---
 
