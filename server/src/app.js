@@ -31,7 +31,7 @@ function cancelPending(id, res, next) {
 }
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({ status: 'ok', version: '0.4.0', uptime: process.uptime() });
 });
 
 app.get('/api/leave-requests', (req, res) => {
