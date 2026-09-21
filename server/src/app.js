@@ -14,6 +14,22 @@ function httpError(status, code, message) {
 const findRequest = (id) =>
   db.prepare('SELECT * FROM leave_requests WHERE id = ?').get(id);
 
+// Cancel guard: only a PENDING request can be cancelled. The status check and the
+// update are one atomic statement, so nothing non-PENDING can ever be cancelled.
+function cancelPending(id, res, next) {
+  const row = findRequest(id);
+  if (!row) return next(httpError(404, 'NOT_FOUND', 'no such leave request'));
+  const result = db.prepare(
+    `UPDATE leave_requests SET status = 'CANCELLED', decided_by = user_id,
+     decided_at = datetime('now') WHERE id = ? AND status = 'PENDING'`
+  ).run(id);
+  if (result.changes === 0) {
+    return next(httpError(409, 'INVALID_STATE',
+      'only PENDING requests can be cancelled; this one is ' + findRequest(id).status));
+  }
+  res.json(findRequest(id));
+}
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
@@ -42,9 +58,10 @@ app.post('/api/leave-requests', (req, res, next) => {
 
 app.patch('/api/leave-requests/:id', (req, res, next) => {
   const { action, decided_by } = req.body || {}; // NOTE: Express 5
+  if (action === 'cancel') return cancelPending(req.params.id, res, next);
   if (action !== 'approve' && action !== 'reject') {
     return next(httpError(400, 'VALIDATION_ERROR',
-      'action must be "approve" or "reject"'));
+      'action must be "approve", "reject" or "cancel"'));
   }
   const row = findRequest(req.params.id);
   if (!row) return next(httpError(404, 'NOT_FOUND', 'no such leave request'));
@@ -59,19 +76,9 @@ app.patch('/api/leave-requests/:id', (req, res, next) => {
   res.json(findRequest(req.params.id));
 });
 
-// Lab: DELETE cancels a PENDING request and refuses a decided one.
+// Phase 3 lab route, kept for compatibility; uses the same cancel guard as PATCH.
 app.delete('/api/leave-requests/:id', (req, res, next) => {
-  const row = findRequest(req.params.id);
-  if (!row) return next(httpError(404, 'NOT_FOUND', 'no such leave request'));
-  if (row.status !== 'PENDING') {
-    return next(httpError(409, 'INVALID_STATE',
-      'only PENDING requests can be cancelled; this one is ' + row.status));
-  }
-  db.prepare(
-    `UPDATE leave_requests SET status = 'CANCELLED', decided_by = user_id,
-     decided_at = datetime('now') WHERE id = ?`
-  ).run(req.params.id);
-  res.json(findRequest(req.params.id));
+  cancelPending(req.params.id, res, next);
 });
 
 app.use((err, req, res, next) => {
