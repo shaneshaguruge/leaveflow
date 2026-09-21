@@ -1,7 +1,7 @@
 # LeaveFlow — Status
 
 **Last updated:** 2026-09-21 · **Stopped at:** paper wireframes committed (PR #33) and the five wireframe gaps closed (PRs #39–#43); `main` = `11ee499`, CI and Release green. Not deployed anywhere (no staging, no prod).
-Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **55 done · 6 done differently · 34 not done**.
+Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **56 done · 6 done differently · 33 not done**.
 **How reviewer items are ticked:** there is no human reviewer on this project; items that need a review are ticked when the work is done — no human reviewer; self-reviewed.
 
 | Phase | Done | Done differently | Not done | Total |
@@ -12,13 +12,13 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 | 3 Build v0 | 7 | 0 | 0 | 7 |
 | 4 Git & Collaboration | 6 | 1 | 0 | 7 |
 | 5 The 3-Tier Build | 8 | 0 | 0 | 8 |
-| 6 Testing & Quality | 6 | 0 | 1 | 7 |
+| 6 Testing & Quality | 7 | 0 | 0 | 7 |
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
 | 8 CI/CD | 4 | 1 | 1 | 6 |
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
 | Capstone (rubric 9 + checklist 8) | 0 | 0 | 17 | 17 |
-| **Total** | **55** | **6** | **34** | **95** |
+| **Total** | **56** | **6** | **33** | **95** |
 
 ## Completed
 - Phase 0: Git 2.53.0 configured (`shaneshaguruge` / `shanesha@arozentech.com`, `main`, `autocrlf=input`); Node v24.14.0; npm 11.19.1; VS Code + 4 extensions; `gh` logged in.
@@ -58,9 +58,10 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Records correction 2026-09-21: Phase 4 "fresh clone runs with npm install && npm run dev" is now `[~]` (works in `server/` and `client/`, not from the root); Phase 8 branch protection `[~]` — 0 required approvals, no human reviewer; self-reviewed.
 - Reviewer items ticked 2026-09-21 (no human reviewer; self-reviewed): Phase 4 "merged through a reviewed PR" (#11) and "responded to every review comment" (0 comments; guard hardened and tested); Phase 5 "five PRs reviewed and merged" (#14–#17, #21; api.md matches); Phase 8 branch protection (`[~]`, 0 approvals).
 
+- Phase 6 seeded bug hunt — planted by a subagent mentor (3 bugs on branch `bughunt`, answer key outside the repo). Found 3/3 by testing and reading: BUG-002 overlap off-by-one (#46), BUG-003 missing 403 on reject (#47), BUG-004 balance counts other years' pending (#48). Full reports `docs/bug-report-002…004.md`; regression tests carried to main (Jest 57/57); `bughunt` deleted, never merged to main.
+
 ## Skipped or blocked, and why
 - Phase 0 `ssh -T git@github.com`: not reached — key generated, not added to GitHub; HTTPS via `gh` used instead.
-- Phase 6 three seeded bugs: not done — nobody has seeded bugs to hunt.
 - Phase 6 manual execution of TC-01…TC-05: not reached — written, marked "not run yet".
 - Phase 7 in-browser login during the new-machine test: not done by me (entering passwords in web forms is left to the user); proven through the same endpoint with curl.
 - Phase 9 Render and AWS deployment: needs AWS or Render account and a paid resource.
@@ -74,7 +75,7 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Phase 2 — [me] add the final `201 Created` arrow (API → Browser) to the paper sequence diagram, re-photograph it and replace `docs/diagrams/sequence-diagram.jpeg` via a PR.
 - Phase 4 — [me] optional: a README and a root `dev` script so `npm install && npm run dev` works from the repo root.
 - Phase 4–5 — [me] ask Nadeesha to confirm Q1 and R5 (HR approving own leave).
-- Phase 6 — [me] bug hunt if bugs get seeded; [me] run TC-01…TC-05 by hand.
+- Phase 6 — [me] run TC-01…TC-05 by hand.
 - Phase 7 — [me] log in once in the browser at http://localhost:8080 to complete the new-machine item.
 - Phase 8 — [me] answer "why npm ci".
 - Phase 9 — [me] Render/AWS accounts with a $10 budget alarm first, then `deploy-render.md` / `deploy-aws.md`; execute the teardown checklist.

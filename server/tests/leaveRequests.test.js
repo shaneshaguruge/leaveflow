@@ -86,6 +86,19 @@ describe('POST /api/leave-requests', () => {
     expect(res.body.error.code).toBe('OVERLAPPING_REQUEST');
   });
 
+  test('BUG-002 regression: a request ending ON an existing request\'s start date overlaps (409)', async () => {
+    const token = await loginAs(ISHARA);
+    expect((await apply(token, { start_date: '2026-10-05', end_date: '2026-10-07' })).status).toBe(201);
+    const endsOnStart = await apply(token, { start_date: '2026-10-01', end_date: '2026-10-05' });
+    expect(endsOnStart.status).toBe(409);
+    expect(endsOnStart.body.error.code).toBe('OVERLAPPING_REQUEST');
+    const sameSingleDay = await apply(token, { start_date: '2026-10-05', end_date: '2026-10-05' });
+    expect(sameSingleDay.status).toBe(409);
+    // the day before and the day after are still free
+    expect((await apply(token, { start_date: '2026-10-02', end_date: '2026-10-02' })).status).toBe(201);
+    expect((await apply(token, { start_date: '2026-10-08', end_date: '2026-10-08' })).status).toBe(201);
+  });
+
   test('refuses a request larger than the remaining balance with 409', async () => {
     const token = await loginAs(ISHARA);
     // Mon 6 Jul - Fri 24 Jul 2026: 15 working days, no holidays; the Annual allocation is 14.
@@ -187,6 +200,18 @@ describe('PATCH /api/leave-requests/:id', () => {
     expect(res.body.error.code).toBe('FORBIDDEN');
   });
 
+  test('BUG-003 regression: a manager cannot reject a request from someone who is not their report (403)', async () => {
+    const hrRequest = await apply(await loginAs(DILINI), { start_date: '2026-03-09', end_date: '2026-03-10' });
+    const ruwan = await loginAs(RUWAN);
+    const res = await act(ruwan, hrRequest.body.id, 'reject');
+    expect(res.status).toBe(403);
+    expect(res.body.error).toEqual({ code: 'FORBIDDEN', message: 'Not your report' });
+    const own = await apply(ruwan, { start_date: '2026-03-11', end_date: '2026-03-11' });
+    expect((await act(ruwan, own.body.id, 'reject')).status).toBe(403); // nor his own
+    const still = await request(app).get('/api/leave-requests').set('Authorization', `Bearer ${await loginAs(DILINI)}`);
+    expect(still.body.find((r) => r.id === hrRequest.body.id).status).toBe('PENDING'); // unchanged
+  });
+
   test('approving a request spanning Vesak poya deducts 3 days, not 4', async () => {
     const created = await apply(await loginAs(ISHARA), { start_date: '2026-04-29', end_date: '2026-05-04' });
     expect(created.status).toBe(201);
@@ -256,5 +281,24 @@ describe('cancelling a request', () => {
     const res = await act(await loginAs(RUWAN), created.body.id, 'cancel');
     expect(res.status).toBe(403);
     expect(res.body.error.code).toBe('FORBIDDEN');
+  });
+});
+
+describe('GET /api/balances', () => {
+  test("BUG-004 regression: a pending request in another year does not reserve this year's balance", async () => {
+    const ishara = await loginAs(ISHARA);
+    const balances = async () => (await request(app).get('/api/balances').set('Authorization', `Bearer ${ishara}`))
+      .body.find((b) => b.id === ANNUAL);
+    const before = await balances();
+    const next = new Date().getFullYear() + 1;
+    // A full Mon–Fri week in January next year (5 working days in any year: 2nd Monday onwards).
+    const monday = new Date(Date.UTC(next, 0, 8));
+    monday.setUTCDate(monday.getUTCDate() + ((8 - monday.getUTCDay()) % 7));
+    const iso = (d) => d.toISOString().slice(0, 10);
+    const friday = new Date(monday); friday.setUTCDate(monday.getUTCDate() + 4);
+    expect((await apply(ishara, { start_date: iso(monday), end_date: iso(friday) })).status).toBe(201);
+    const after = await balances();
+    expect(after.pending_days).toBe(before.pending_days);
+    expect(after.remaining_days).toBe(before.remaining_days);
   });
 });
