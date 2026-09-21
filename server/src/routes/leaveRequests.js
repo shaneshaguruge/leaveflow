@@ -1,6 +1,8 @@
 const express = require('express');
 const pool = require('../db/pool');
+const { requireAuth } = require('../middleware/auth');
 const router = express.Router();
+router.use(requireAuth);
 
 const fail = (res, status, code, message) => res.status(status).json({ error: { code, message } });
 const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || '') && !Number.isNaN(Date.parse(v));
@@ -20,7 +22,9 @@ function leaveDays(startDate, endDate) {
 
 router.get('/', async (req, res, next) => {
   try {
-    const q = await pool.query('SELECT * FROM leave_requests ORDER BY created_at DESC');
+    const q = req.user.role === 'HR_ADMIN'
+      ? await pool.query('SELECT * FROM leave_requests ORDER BY created_at DESC')
+      : await pool.query('SELECT * FROM leave_requests WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
     res.json(q.rows);
   } catch (err) { next(err); }
 });
@@ -28,9 +32,9 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const { leave_type_id, start_date, end_date, reason } = req.body || {};
-    const userId = Number((req.body || {}).user_id); // TEMP â€” Part C replaces this with the token
-    if (!userId || !leave_type_id || !start_date || !end_date) {
-      return fail(res, 400, 'VALIDATION_ERROR', 'user_id, leave_type_id, start_date and end_date are required');
+    const userId = req.user.id; // always the logged-in user; any user_id in the body is ignored
+    if (!leave_type_id || !start_date || !end_date) {
+      return fail(res, 400, 'VALIDATION_ERROR', 'leave_type_id, start_date and end_date are required');
     }
     if (!isDate(start_date) || !isDate(end_date)) {
       return fail(res, 400, 'VALIDATION_ERROR', 'start_date and end_date must be YYYY-MM-DD');
@@ -82,11 +86,22 @@ router.patch('/:id', async (req, res, next) => {
   if (!['approve', 'reject', 'cancel'].includes(action)) {
     return fail(res, 400, 'VALIDATION_ERROR', 'action must be "approve", "reject" or "cancel"');
   }
-  let found;
+  if (!/^\d+$/.test(req.params.id)) return fail(res, 404, 'NOT_FOUND', 'No such request');
+  let q;
   try {
-    found = await pool.query('SELECT id FROM leave_requests WHERE id = $1', [req.params.id]);
+    q = await pool.query(`SELECT lr.user_id, u.manager_id FROM leave_requests lr
+       JOIN users u ON u.id = lr.user_id WHERE lr.id = $1`, [req.params.id]);
   } catch (err) { return next(err); }
-  if (!found.rowCount) return fail(res, 404, 'NOT_FOUND', 'No such request');
+  if (!q.rowCount) return fail(res, 404, 'NOT_FOUND', 'No such request');
+  const { user_id, manager_id } = q.rows[0];
+  if (action === 'cancel' && user_id !== req.user.id)
+    return fail(res, 403, 'FORBIDDEN', 'Only the owner can cancel');
+  if (action !== 'cancel') {
+    if (!['MANAGER', 'HR_ADMIN'].includes(req.user.role))
+      return fail(res, 403, 'FORBIDDEN', 'Managers only');
+    if (req.user.role === 'MANAGER' && manager_id !== req.user.id)
+      return fail(res, 403, 'FORBIDDEN', 'Not your report');
+  }
   if (action !== 'approve') return decideSimple(req, res, next);
 
   const client = await pool.connect();
@@ -94,7 +109,7 @@ router.patch('/:id', async (req, res, next) => {
     await client.query('BEGIN');
     const upd = await client.query(`UPDATE leave_requests SET status = 'APPROVED',
        decided_by = $1, decided_at = now() WHERE id = $2 AND status = 'PENDING' RETURNING *`,
-      [Number((req.body || {}).decided_by) || null, req.params.id]); // TEMP until Part C
+      [req.user.id, req.params.id]);
     if (!upd.rowCount) {
       const e = new Error('Request is not pending'); e.status = 409; e.code = 'INVALID_STATE'; throw e;
     }
@@ -120,7 +135,7 @@ async function decideSimple(req, res, next) { // reject/cancel change one row â€
     const upd = req.body.action === 'reject'
       ? await pool.query(`UPDATE leave_requests SET status = 'REJECTED', decided_by = $1, decided_at = now()
            WHERE id = $2 AND status = 'PENDING' RETURNING *`,
-        [Number(req.body.decided_by) || null, req.params.id]) // TEMP until Part C
+        [req.user.id, req.params.id])
       : await pool.query(`UPDATE leave_requests SET status = 'CANCELLED', decided_by = user_id, decided_at = now()
            WHERE id = $1 AND status = 'PENDING' RETURNING *`, [req.params.id]);
     if (!upd.rowCount) return fail(res, 409, 'INVALID_STATE', 'Request is not pending');

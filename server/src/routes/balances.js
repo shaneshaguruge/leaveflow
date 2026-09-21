@@ -1,6 +1,8 @@
 const express = require('express');
 const pool = require('../db/pool');
+const { requireAuth } = require('../middleware/auth');
 const router = express.Router();
+router.use(requireAuth);
 
 // Working days between two dates, inclusive, excluding weekends (Phase 6 extracts this).
 function leaveDays(startDate, endDate) {
@@ -17,7 +19,7 @@ function leaveDays(startDate, endDate) {
 
 router.get('/', async (req, res, next) => {
   try {
-    const userId = Number(req.query.user_id); // TEMP until Part C
+    const userId = req.user.id;
     const year = new Date().getFullYear();
     const q = await pool.query(
       `SELECT lt.id, lt.name, lt.annual_allocation, COALESCE(lb.used_days, 0) AS used_days
