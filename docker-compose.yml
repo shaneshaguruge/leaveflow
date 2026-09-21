@@ -2,9 +2,10 @@
 #
 # First run (and after `docker compose down -v`), apply the schema AND the seed data:
 #   docker compose exec api npm run migrate
-# There is no separate `npm run seed`: the seed data lives in migrations 002_seed.sql and
-# 003_seed_demo.sql, so `npm run migrate` applies them. It is idempotent (schema_migrations
-# records what already ran), so running it again is safe.
+#   docker compose exec api npm run seed
+# The seed data lives in migrations 002–004, so `npm run migrate` already applies it; `npm run seed`
+# is the same idempotent runner (the guide's step 8 command). schema_migrations records what already
+# ran, so running either again is safe and applies nothing.
 services:
   db:
     image: postgres:16
