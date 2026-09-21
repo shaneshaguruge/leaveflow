@@ -1,0 +1,17 @@
+# Host-built deps are for the wrong OS; npm ci installs clean Linux deps in the image
+node_modules
+# Secrets and local config never enter an image (.env.example is harmless and kept)
+.env
+.env.*
+!.env.example
+# Local embedded-postgres data directory (dev only)
+.pgdata
+*.sqlite
+*.db
+npm-debug.log*
+coverage
+tests
+Dockerfile
+.dockerignore
+.git
+.gitignore
