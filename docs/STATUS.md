@@ -1,6 +1,6 @@
 # LeaveFlow — Status
 
-**Last updated:** 2026-09-21 · **Stopped at:** Docker, Phase 7, Phase 8 admin items and a full read-only audit done; `main` = `7ae5945`, branch-protected; CI and Release green on it.
+**Last updated:** 2026-09-21 · **Stopped at:** stale docs refreshed + US-4 reject test (PR #30); Nadeesha's overlap feature US-16 built through story → PR #32 → CI. Not deployed anywhere (no staging, no prod).
 Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **51 done · 6 done differently · 38 not done**. No PR has been reviewed by a human.
 
 | Phase | Done | Done differently | Not done | Total |
@@ -48,12 +48,13 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Audit 2026-09-21: server lint ✓, Jest 32/32, client lint ✓, Vitest 8/8, Playwright 3/3, npm audit 0/0/0, compose `/api/health` 200, no `.env`/`node_modules`/`.db` tracked, 8/8 routes match api.md.
 
 - Docs refresh (PR 1 of 2 after the audit): branch-protection.md now matches the applied rule (0 approvals, admins not enforced, strict false); deploy-render/deploy-aws/security-audit/runbook say `TRUST_PROXY` is already read by the code; `npm run seed` documented; security-audit shows 25 `query(` calls (24 literal + 1 migration runner); design.md R4 and R7 marked done; requirements.md Q1 records the decision, still to confirm with Nadeesha.
+- Phase 10 overlap feature (US-16, issue #31, PR #32): `GET /api/team/requests?from=&to=` returns APPROVED leave of the manager's own reports (HR_ADMIN: everyone) overlapping the range; EMPLOYEE 403; parameterized SQL. "Team that week" panel on each Approvals card, empty state "No one else is off". Seed 005 adds Kasun Perera (Ruwan's 2nd report). Jest 43/43, Vitest 12/12, Playwright 3/3 locally; CI https://github.com/shaneshaguruge/leaveflow/actions/runs/35591444394. Live curl: 200 `[{"employee_name":"Kasun Perera",…}]`, 200 `[]`, 403, 400, 401. **Not in staging or prod** — the Phase 10 checkbox stays unticked.
 - US-4 reject now has automated tests: "US-4 reject: the manager rejects a PENDING request, nothing is deducted, and the decision is final" and "forbids an EMPLOYEE rejecting a request with 403" — Jest 34/34 locally.
 
 ## Skipped or blocked, and why
 - Phase 0 `ssh -T git@github.com`: not reached — key generated, not added to GitHub; HTTPS via `gh` used instead.
 - Phase 1 paper wireframe photo: in progress by the user (not yet committed).
-- Mentor review of PRs #11–#28: needs mentor — no PR has been reviewed by a human; leaves Phase 4 items 3–4 and Phase 5 item 8 unticked.
+- Mentor review of PRs #11–#32: needs mentor — no PR has been reviewed by a human; leaves Phase 4 items 3–4 and Phase 5 item 8 unticked.
 - Phase 6 three seeded bugs: needs mentor.
 - Phase 6 manual execution of TC-01…TC-05: not reached — written, marked "not run yet".
 - Phase 7 in-browser login during the new-machine test: not done by me (entering passwords in web forms is left to the user); proven through the same endpoint with curl.
@@ -61,19 +62,19 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Phase 9 Render and AWS deployment: needs AWS or Render account and a paid resource.
 - Phase 10 CloudWatch alarm, SNS, snapshot restore drill: needs AWS account and a paid resource.
 - Phase 10 staged incident: needs mentor.
-- Phase 10 overlap feature (manager sees who else is off): not reached.
+- Phase 10 overlap feature: staging demo and prod release not done — no deployment exists (Phase 9); mentor review of PR #32 not done.
 - Capstone: not reached.
 
 ## Still to do, and who
 - Phase 0 — [me] add the SSH key to GitHub (optional); [me] self-assess terminal fluency.
 - Phase 1 — [me] commit `docs/wireframes/apply-for-leave.jpg` via a PR, then tick the box.
 - Phase 2 — [me] decide on the uncommitted paper diagrams in `docs/` (the paper sequence diagram still needs its final 201 arrow).
-- Phase 4–5 — [mentor] review merged PRs #11–#28; [me] ask Nadeesha to confirm Q1 and R5 (HR approving own leave).
+- Phase 4–5 — [mentor] review merged PRs #11–#32; [me] ask Nadeesha to confirm Q1 and R5 (HR approving own leave).
 - Phase 6 — [mentor] seed three bugs; [me] find, report and fix them via PRs; [me] run TC-01…TC-05 by hand.
 - Phase 7 — [me] log in once in the browser at http://localhost:8080 to complete the new-machine item.
 - Phase 8 — [me] answer "why npm ci"; [mentor] decide whether to require 1 approval.
 - Phase 9 — [me] Render/AWS accounts with a $10 budget alarm first, then `deploy-render.md` / `deploy-aws.md`; execute the teardown checklist.
-- Phase 10 — [me] CloudWatch 5xx alarm, restore drill, overlap feature; [mentor] staged incident.
+- Phase 10 — [me] CloudWatch 5xx alarm, restore drill, ship US-16 to staging then prod (after Phase 9) and reply to Nadeesha with the live link; [me] ask Nadeesha whether overlapping leave should also *warn* or *block*; [mentor] staged incident, review PR #32.
 - Capstone — [me] half-day leave + holiday calendar; [mentor] customer and reviewer.
 
 ## Known issues
