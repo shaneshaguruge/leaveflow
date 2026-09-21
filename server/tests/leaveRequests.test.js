@@ -200,6 +200,18 @@ describe('PATCH /api/leave-requests/:id', () => {
     expect(res.body.error.code).toBe('FORBIDDEN');
   });
 
+  test('BUG-003 regression: a manager cannot reject a request from someone who is not their report (403)', async () => {
+    const hrRequest = await apply(await loginAs(DILINI), { start_date: '2026-03-09', end_date: '2026-03-10' });
+    const ruwan = await loginAs(RUWAN);
+    const res = await act(ruwan, hrRequest.body.id, 'reject');
+    expect(res.status).toBe(403);
+    expect(res.body.error).toEqual({ code: 'FORBIDDEN', message: 'Not your report' });
+    const own = await apply(ruwan, { start_date: '2026-03-11', end_date: '2026-03-11' });
+    expect((await act(ruwan, own.body.id, 'reject')).status).toBe(403); // nor his own
+    const still = await request(app).get('/api/leave-requests').set('Authorization', `Bearer ${await loginAs(DILINI)}`);
+    expect(still.body.find((r) => r.id === hrRequest.body.id).status).toBe('PENDING'); // unchanged
+  });
+
   test('approving a request spanning Vesak poya deducts 3 days, not 4', async () => {
     const created = await apply(await loginAs(ISHARA), { start_date: '2026-04-29', end_date: '2026-05-04' });
     expect(created.status).toBe(201);
