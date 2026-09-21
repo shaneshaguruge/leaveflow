@@ -14,7 +14,7 @@ function validateDates(start, end) {
   return null;
 }
 
-export default function ApplyLeaveForm({ balances = [], onCreated = () => {} }) {
+export default function ApplyLeaveForm({ balances = [], onCreated = () => {}, onCancel = () => {} }) {
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -26,6 +26,13 @@ export default function ApplyLeaveForm({ balances = [], onCreated = () => {} }) 
   const bothDates = Boolean(form.start_date && form.end_date);
   const days = dateError ? 0 : workingDays(form.start_date, form.end_date);
   const left = selected ? selected.remaining_days - days : null;
+
+  // Cancel: throw the draft away and go back to the My requests list.
+  function cancel() {
+    setForm(EMPTY);
+    setError(null);
+    onCancel();
+  }
 
   async function submit(e) {
     e.preventDefault();
@@ -78,7 +85,10 @@ export default function ApplyLeaveForm({ balances = [], onCreated = () => {} }) 
         Reason
         <input value={form.reason} onChange={update('reason')} placeholder="Optional" />
       </label>
-      <button className="btn btn-primary" disabled={busy || Boolean(dateError)}>Apply</button>
+      <div className="form-actions">
+        <button className="btn btn-primary" disabled={busy || Boolean(dateError)}>Submit request</button>
+        <button type="button" className="link" onClick={cancel}>Cancel</button>
+      </div>
       {error && <p role="alert" className="error">{error}</p>}
     </form>
   );

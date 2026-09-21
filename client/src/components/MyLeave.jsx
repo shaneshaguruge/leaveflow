@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import { plural, workingDays } from '../leaveDays';
 import { typeName } from '../leaveTypes';
@@ -12,6 +12,12 @@ export default function MyLeave() {
   const [busyId, setBusyId] = useState(null);
   const [version, setVersion] = useState(0);
   const reload = useCallback(() => setVersion((v) => v + 1), []);
+  const requestsHeading = useRef(null);
+  // The apply form's Cancel: back to the My requests list (scroll there and move keyboard focus to it).
+  const backToRequests = useCallback(() => {
+    requestsHeading.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    requestsHeading.current?.focus();
+  }, []);
 
   // Fetch after the first render, and again whenever reload() bumps the version.
   useEffect(() => {
@@ -58,10 +64,10 @@ export default function MyLeave() {
 
       {error && <p role="alert" className="error">{error}</p>}
 
-      <ApplyLeaveForm balances={balances} onCreated={reload} />
+      <ApplyLeaveForm balances={balances} onCreated={reload} onCancel={backToRequests} />
 
       <section aria-labelledby="requests-heading">
-        <h2 id="requests-heading">My requests</h2>
+        <h2 id="requests-heading" ref={requestsHeading} tabIndex={-1}>My requests</h2>
         {requests.length === 0 && <p className="muted">No requests yet.</p>}
         <ul className="list">
           {requests.map((r) => (
