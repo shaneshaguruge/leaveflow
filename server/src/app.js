@@ -1,9 +1,9 @@
 const express = require('express');
-const morgan = require('morgan');
+const { httpLogger } = require('./middleware/logging');
 const { errorHandler } = require('./middleware/errors');
 
 const app = express();
-app.use(morgan('dev'));
+app.use(httpLogger);
 app.use(express.json());
 
 app.get('/api/health', (req, res) => {
