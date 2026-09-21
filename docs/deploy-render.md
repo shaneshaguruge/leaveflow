@@ -51,10 +51,11 @@ HTTPS, DNS and wiring are included. Expect ~30 minutes.
    `NODE_ENV=production` is set by the Dockerfile. **Do not set `NODE_ENV=test`** — it silences logs and
    switches the login rate limiter off.
 5. Health Check Path: `/api/health`.
-6. **Trust proxy (action item before go-live).** Render puts a proxy in front of the container, so without
-   `app.set('trust proxy', 1)` in `server/src/app.js` Express sees every request as coming from the proxy.
-   The login limiter (10/min per IP) would then be shared by *everyone*. This change is **not made yet**;
-   see `docs/security-audit.md`, row "Login brute force".
+6. **Trust proxy.** Render puts a proxy in front of the container, so Express would see every request as
+   coming from the proxy and the login limiter (10/min per IP) would be shared by *everyone*.
+   `server/src/app.js` already reads the **`TRUST_PROXY`** environment variable (number of proxy hops) and
+   calls `app.set('trust proxy', …)` with it — no code change needed. Add env var **`TRUST_PROXY=1`** here,
+   then re-run the 11-login check against the Render URL (`docs/security-audit.md`, "Login brute force").
 
 ## 3. Run migrations (and seed) the first time
 
@@ -64,9 +65,10 @@ An empty database has no tables. Open the service's **Shell** tab and run:
 npm run migrate
 ```
 
-This project has **no separate `npm run seed`** (the guide's step has one): seed data is in migrations
-`002_seed.sql` and `003_seed_demo.sql`, so `migrate` creates the schema and the seed users in one go, and a
-second run prints nothing because applied files are recorded in `schema_migrations`.
+`npm run seed` also exists (added in PR #26, the guide's step) but runs the **same** idempotent runner: the seed
+data is in migrations `002_seed.sql`–`004_fix_demo_balance_for_holidays.sql`, so `migrate` already creates the
+schema and the seed users in one go, and a second run of either script prints nothing because applied files are
+recorded in `schema_migrations`.
 
 > ⚠️ `002_seed.sql` creates the three demo users with password `password123`. That is fine for a demo on
 > Render, **not** for Ceylon Roots' real data. Before real users: change those passwords or remove the demo

@@ -8,8 +8,8 @@
 | **Out of scope (v1)** | Payroll, WhatsApp integration, native mobile apps |
 | **Roles** | EMPLOYEE, MANAGER, HR_ADMIN |
 | **Leave types** | Annual 14 / Casual 7 / Sick 7 days per year |
-| **Request lifecycle** | PENDING → APPROVED \| REJECTED (manager or HR_ADMIN — Q1 unconfirmed); PENDING → CANCELLED (owner) |
-| **Open questions** | Q1–Q5 below. **Blocking: Q1 (approval flow)** |
+| **Request lifecycle** | PENDING → APPROVED \| REJECTED (the requester's manager, or HR_ADMIN for anyone — Q1 project decision, to confirm with Nadeesha); PENDING → CANCELLED (owner) |
+| **Open questions** | Q1–Q5 below. Q1 is no longer blocking: the project decided it (see the table), still to confirm with Nadeesha |
 
 ---
 
@@ -179,7 +179,7 @@ The Must list alone is a usable product.
 
 | Q | Assumption | Status |
 |---|---|---|
-| Q1 | Manager approves; HR can see and override everything (US-9) | Unconfirmed — **BLOCKING** |
+| Q1 | **Decided by the project 2026-09-21:** a manager approves or rejects their own reports (`users.manager_id`); HR_ADMIN approves or rejects anyone; one step, no second approval. Built in Phase 5 (PR #16), see `api.md` §3 | Decision recorded — **still to be confirmed with Nadeesha** (if she wants "manager then HR", add a state; `design.md` R3) |
 | Q2 | Unused days expire on Dec 31 | **Unconfirmed** |
 | Q3 | Weekends and poya days are skipped (not counted) | Unconfirmed |
 | Q4 | Yes, sick leave can be applied up to 7 days after | **Unconfirmed** |

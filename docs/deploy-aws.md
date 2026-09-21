@@ -108,9 +108,10 @@ Console → App Runner → Create service:
 Then edit `leaveflow-db-sg`: inbound **TCP 5432, source = `leaveflow-apprunner-sg`** (a security group ID,
 not a CIDR). No other inbound rules.
 
-**Trust proxy (action item).** Requests reach Express through CloudFront and App Runner's front end, so the
-login limiter needs `app.set('trust proxy', …)` set to the right hop count, or all users share one
-10-per-minute bucket. Not changed in code yet — see `docs/security-audit.md`.
+**Trust proxy.** Requests reach Express through CloudFront and App Runner's front end, so the login limiter
+needs `trust proxy` set to the right hop count, or all users share one 10-per-minute bucket. The code already
+handles this: `server/src/app.js` reads the **`TRUST_PROXY`** env var — set it on the App Runner service to the
+number of hops (measure it: log `req.ips` once), then re-run the 11-login check (`docs/security-audit.md`).
 
 ## 6. Migrations in prod
 

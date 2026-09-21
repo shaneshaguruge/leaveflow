@@ -15,14 +15,15 @@ real output. Where something could not be verified, the row says so.
 | 2 | Broken access control (A01) | `requireAuth`, `requireRole`, ownership and manager checks in `routes/` | 10 curl checks as the wrong user | **PASS** |
 | 3 | Secrets exposure (A02/A05) | `.env` git-ignored, platform env vars (planned), pino `redact` | `git ls-files`, `git log --all -p`, log-file grep | **PASS**, one note |
 | 4 | Vulnerable dependencies (A06) | `npm audit`; Dependabot (not verified) | `npm audit --omit=dev`, `npm audit` | **PASS** (0 found) |
-| 5 | Login brute force (A07) | `express-rate-limit`, 10/min per IP on `POST /api/auth/login` | 11 bad logins, reset timing, test-mode check | **PASS locally**; prod needs `trust proxy` |
+| 5 | Login brute force (A07) | `express-rate-limit`, 10/min per IP on `POST /api/auth/login` | 11 bad logins, reset timing, test-mode check | **PASS locally**; prod sets the `TRUST_PROXY` env var (code reads it) |
 
 ## 1. SQL injection
 
 | Check | Command | Result |
 |---|---|---|
 | Count query calls in routes | `grep -rn "query(" server/src/routes/ \| wc -l` | `21` |
-| Any `${…}` inside a SQL string passed to `query(` (multi-line aware) | Node script: regex over every `query(<literal>` in `server/src/{routes,db,middleware}/*.js`, flag `${` inside the literal | `query() calls with literal SQL: 24 with ${} interpolation: 0` |
+| Count query calls in all server code | `grep -rn "query(" server/src/ \| wc -l` | `25` (21 in routes + 4 in `db/migrate.js`; re-run 2026-09-21) |
+| Any `${…}` inside a SQL string passed to `query(` (multi-line aware) | Node script: regex over every `query(<literal>` in `server/src/{routes,db,middleware}/*.js`, flag `${` inside the literal | `query() calls with literal SQL: 24 with ${} interpolation: 0` — 24 of the 25 calls; the 25th is the non-literal one in `db/migrate.js` (next rows). Re-run 2026-09-21: same result |
 | Any `${…}` in routes at all | `grep -rnE '\$\{[^}]*\}' server/src/routes/` | 2 hits, both **error messages**, not SQL: `leaveRequests.js:50` (`OVERLAPPING_REQUEST` text) and `:64` (`INSUFFICIENT_BALANCE` text) |
 | String concatenation into `query(` | `grep -rnE "query\([^)]*\+ " server/src/` | no output |
 | Non-literal SQL | `grep -rnE "query\(\s*[^\`'\" ]" server/src/ server/scripts/` | 1 hit: `db/migrate.js:11` runs the `.sql` migration files from the repo — no user input |
@@ -95,10 +96,11 @@ handler, `skip` when `NODE_ENV=test`. Server freshly started so the in-memory co
 | Window resets | after restart: 11 good logins, then poll until 200 | `200 ×10, 429`, then `login allowed again after 62s` (poll every 5 s) |
 | Disabled in tests | server with `NODE_ENV=test`, 15 wrong logins | 15 × `401`, no 429; no `RateLimit-*` headers; no request log lines |
 
-**Gap before production (not fixed in this change):** the limiter keys on `req.ip`. Behind Render's proxy or
-CloudFront + App Runner, `req.ip` is the proxy's address unless `app.set('trust proxy', <hops>)` is configured,
-so all users would share one 10-per-minute bucket (and a single attacker would lock everyone out). Fix at deploy
-time with the correct hop count for the platform, and re-run the 11-login check against the deployed URL.
+**Before production:** the limiter keys on `req.ip`. Behind nginx, Render's proxy or CloudFront + App Runner,
+`req.ip` is the proxy's address unless `trust proxy` is configured, so all users would share one 10-per-minute
+bucket (and a single attacker would lock everyone out). **Fixed in code:** `server/src/app.js` reads the
+`TRUST_PROXY` env var (hop count) and calls `app.set('trust proxy', …)`; Docker Compose sets `TRUST_PROXY: "1"`
+for nginx. At deploy time set it to the platform's hop count and re-run the 11-login check against the deployed URL.
 The in-memory store is also per-instance: with more than one App Runner instance the effective limit is
 10 × instances per minute — acceptable at 60 users.
 
