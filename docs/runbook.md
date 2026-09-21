@@ -49,7 +49,7 @@ someone is with you. **Mitigate first, diagnose second** — the logs will still
 |---|---|---|
 | Health 200, **every** authenticated call 401 `BAD_TOKEN`, starting at one exact minute | `JWT_SECRET` changed (all tokens invalid) | App Runner configuration history |
 | Health 200, logins 401 `BAD_CREDENTIALS` for everyone | wrong/empty DB (e.g. `DATABASE_URL` points at a fresh DB) | log line for a known user; RDS endpoint in config |
-| Many `429 RATE_LIMITED` for many users at once | limiter keyed on the proxy IP (no `trust proxy`), so all users share one bucket | `req.remoteAddress` in logs is the same for everyone → set `app.set('trust proxy', …)` |
+| Many `429 RATE_LIMITED` for many users at once | limiter keyed on the proxy IP (no `trust proxy`), so all users share one bucket | `req.remoteAddress` in logs is the same for everyone → set the `TRUST_PROXY` env var to the proxy hop count (the code reads it; see `app.js`) and redeploy |
 | 500 `INTERNAL`, stack says `relation "users" does not exist` | migrations not run on that DB | start command includes `npm run migrate` |
 | 500s, `ECONNREFUSED` / timeout to `:5432` | DB down, or security group / VPC connector changed | RDS status; `leaveflow-db-sg` inbound rule |
 | 500s, `sorry, too many clients already` | connections exhausted | section below |

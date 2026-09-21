@@ -47,6 +47,9 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Phase 10 (local only, no prod): pino JSON logs with request ids and redaction; login 429 after 10/min; security audit re-run 2026-09-21 — PR #20.
 - Audit 2026-09-21: server lint ✓, Jest 32/32, client lint ✓, Vitest 8/8, Playwright 3/3, npm audit 0/0/0, compose `/api/health` 200, no `.env`/`node_modules`/`.db` tracked, 8/8 routes match api.md.
 
+- Docs refresh (PR 1 of 2 after the audit): branch-protection.md now matches the applied rule (0 approvals, admins not enforced, strict false); deploy-render/deploy-aws/security-audit/runbook say `TRUST_PROXY` is already read by the code; `npm run seed` documented; security-audit shows 25 `query(` calls (24 literal + 1 migration runner); design.md R4 and R7 marked done; requirements.md Q1 records the decision, still to confirm with Nadeesha.
+- US-4 reject now has automated tests: "US-4 reject: the manager rejects a PENDING request, nothing is deducted, and the decision is final" and "forbids an EMPLOYEE rejecting a request with 403" — Jest 34/34 locally.
+
 ## Skipped or blocked, and why
 - Phase 0 `ssh -T git@github.com`: not reached — key generated, not added to GitHub; HTTPS via `gh` used instead.
 - Phase 1 paper wireframe photo: in progress by the user (not yet committed).
@@ -66,25 +69,17 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Phase 1 — [me] commit `docs/wireframes/apply-for-leave.jpg` via a PR, then tick the box.
 - Phase 2 — [me] decide on the uncommitted paper diagrams in `docs/` (the paper sequence diagram still needs its final 201 arrow).
 - Phase 4–5 — [mentor] review merged PRs #11–#28; [me] ask Nadeesha to confirm Q1 and R5 (HR approving own leave).
-- Phase 6 — [mentor] seed three bugs; [me] find, report and fix them via PRs; [me] run TC-01…TC-05 by hand; [me] add an automated reject test.
+- Phase 6 — [mentor] seed three bugs; [me] find, report and fix them via PRs; [me] run TC-01…TC-05 by hand.
 - Phase 7 — [me] log in once in the browser at http://localhost:8080 to complete the new-machine item.
 - Phase 8 — [me] answer "why npm ci"; [mentor] decide whether to require 1 approval.
 - Phase 9 — [me] Render/AWS accounts with a $10 budget alarm first, then `deploy-render.md` / `deploy-aws.md`; execute the teardown checklist.
 - Phase 10 — [me] CloudWatch 5xx alarm, restore drill, overlap feature; [mentor] staged incident.
-- Docs — [me] refresh the stale docs listed under Known issues.
 - Capstone — [me] half-day leave + holiday calendar; [mentor] customer and reviewer.
 
 ## Known issues
 - Docker Desktop crashed on start: `starting services: initializing Inference manager: listening on unix://<HOME>\AppData\Local\Docker\run\dockerInference: remove …: The file cannot be accessed by the system.` Fixed by the user on 2026-09-21; a leftover folder `%LOCALAPPDATA%\Docker\run.stale-20260921` with two stale socket files remains.
 - Running `npm ci` in `server/` while `npm run db` is running fails (EPERM on the Postgres binaries in `node_modules/@embedded-postgres`); stop the DB first or use `npm install`.
-- `docs/branch-protection.md` still describes 1 approval, `enforce_admins: true` and `strict: true`; the applied rule is 0 approvals, `enforce_admins: false`, `strict: false`.
-- `docs/deploy-render.md` says there is no `npm run seed` (true before PR #26, stale now).
-- `docs/deploy-render.md`, `docs/deploy-aws.md`, `docs/security-audit.md` and `docs/runbook.md` say to add `app.set('trust proxy', …)`; the code already reads the `TRUST_PROXY` environment variable.
-- `docs/security-audit.md` counts 24 `query(` calls; there are 25 now.
-- `docs/design.md` risks R4 (holiday list "added in Phase 6") and R7 ("Phase 5 code must be extended") describe work that is already done.
-- `docs/requirements.md` lists Q1 as "Unconfirmed — BLOCKING"; `design.md`/`api.md` record the project decision (manager → own reports, HR_ADMIN → anyone), still unconfirmed by Nadeesha.
 - `docs/requirements.md` §7 says "No paper photo exists yet" — true until the wireframe PR lands.
-- US-4 "reject" has no automated test; verified live only (request #5 → REJECTED, 2026-09-21).
 - `server/src/lib/holidays.js`: 2026-05-02 marked `TODO verify`; only 2026 is loaded.
 - The client's live "= N working days" line counts weekends only; the server also excludes holidays and is the authority.
 - HR "All requests" page shows `Employee #id` — the list endpoint returns no employee names.

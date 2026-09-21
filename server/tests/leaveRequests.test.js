@@ -135,6 +135,39 @@ describe('PATCH /api/leave-requests/:id', () => {
     expect(await usedDays(2, ANNUAL, 2026)).toBe(5); // 14 - 5 = 9 remaining
   });
 
+  test('US-4 reject: the manager rejects a PENDING request, nothing is deducted, and the decision is final', async () => {
+    const ishara = await loginAs(ISHARA);
+    const created = await apply(ishara, { start_date: '2026-03-09', end_date: '2026-03-13' });
+    expect(created.status).toBe(201);
+
+    const ruwan = await loginAs(RUWAN);
+    const rejected = await act(ruwan, created.body.id, 'reject');
+    expect(rejected.status).toBe(200);
+    expect(rejected.body.status).toBe('REJECTED');
+    expect(rejected.body.decided_by).toBe(1);
+    expect(rejected.body.decided_at).not.toBeNull();
+    expect(await usedDays(2, ANNUAL, 2026)).toBe(0); // a rejection never touches the balance
+
+    const mine = await request(app).get('/api/leave-requests').set('Authorization', `Bearer ${ishara}`);
+    expect(mine.body.find((r) => r.id === created.body.id).status).toBe('REJECTED'); // US-10: Ishara sees it
+
+    const pending = await request(app).get('/api/team/requests').set('Authorization', `Bearer ${ruwan}`);
+    expect(pending.body.map((r) => r.id)).not.toContain(created.body.id); // gone from Approvals
+
+    const again = await act(ruwan, created.body.id, 'approve');
+    expect(again.status).toBe(409);
+    expect(again.body.error.code).toBe('INVALID_STATE');
+    expect(await usedDays(2, ANNUAL, 2026)).toBe(0);
+  });
+
+  test('forbids an EMPLOYEE rejecting a request with 403', async () => {
+    const token = await loginAs(ISHARA);
+    const created = await apply(token, { start_date: '2026-03-09', end_date: '2026-03-10' });
+    const res = await act(token, created.body.id, 'reject');
+    expect(res.status).toBe(403);
+    expect(res.body.error.code).toBe('FORBIDDEN');
+  });
+
   test('approving a request spanning Vesak poya deducts 3 days, not 4', async () => {
     const created = await apply(await loginAs(ISHARA), { start_date: '2026-04-29', end_date: '2026-05-04' });
     expect(created.status).toBe(201);
