@@ -18,8 +18,8 @@ router.get('/', asyncHandler(async (req, res) => {
       [userId, year]);
     const pending = await pool.query(
       `SELECT leave_type_id, start_date, end_date FROM leave_requests
-       WHERE user_id = $1 AND status = 'PENDING' AND EXTRACT(YEAR FROM start_date) = $2`,
-      [userId, year]);
+       WHERE user_id = $1 AND status = 'PENDING'`,
+      [userId]);
     const pendingByType = {};
     for (const r of pending.rows) {
       pendingByType[r.leave_type_id] = (pendingByType[r.leave_type_id] || 0) + leaveDays(r.start_date, r.end_date, HOLIDAYS);

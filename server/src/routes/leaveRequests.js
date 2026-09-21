@@ -37,7 +37,7 @@ router.post('/', validate([
   const overlap = await pool.query(
     `SELECT id, start_date, end_date FROM leave_requests
      WHERE user_id = $1 AND status IN ('PENDING', 'APPROVED')
-       AND start_date <= $3 AND end_date >= $2
+       AND start_date < $3 AND end_date >= $2
      ORDER BY start_date LIMIT 1`, [userId, start_date, end_date]);
   if (overlap.rowCount) {
     const o = overlap.rows[0];
@@ -73,9 +73,11 @@ router.patch('/:id', validate([
   if (!q.rowCount) throw httpError(404, 'NOT_FOUND', 'No such request');
   const { user_id, manager_id } = q.rows[0];
   if (action === 'cancel' && user_id !== req.user.id) throw httpError(403, 'FORBIDDEN', 'Only the owner can cancel');
-  if (action !== 'cancel') {
-    if (!['MANAGER', 'HR_ADMIN'].includes(req.user.role)) throw httpError(403, 'FORBIDDEN', 'Managers only');
-    if (req.user.role === 'MANAGER' && manager_id !== req.user.id) throw httpError(403, 'FORBIDDEN', 'Not your report');
+  if (action !== 'cancel' && !['MANAGER', 'HR_ADMIN'].includes(req.user.role)) {
+    throw httpError(403, 'FORBIDDEN', 'Managers only');
+  }
+  if (action === 'approve' && req.user.role === 'MANAGER' && manager_id !== req.user.id) {
+    throw httpError(403, 'FORBIDDEN', 'Not your report');
   }
 
   if (action !== 'approve') { // reject/cancel change one row — no transaction needed
