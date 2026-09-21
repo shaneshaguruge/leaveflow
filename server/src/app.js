@@ -1,9 +1,16 @@
 const express = require('express');
-const morgan = require('morgan');
+const { httpLogger } = require('./middleware/logging');
 const { errorHandler } = require('./middleware/errors');
 
 const app = express();
-app.use(morgan('dev'));
+// Behind a reverse proxy (nginx in compose, Render, CloudFront/App Runner) req.ip is the proxy's
+// address, so every user would share ONE login rate-limit bucket. TRUST_PROXY = the number of proxy
+// hops in front of the API. Unset (local dev) means X-Forwarded-For is ignored, so it can't be spoofed.
+if (process.env.TRUST_PROXY) {
+  const hops = process.env.TRUST_PROXY;
+  app.set('trust proxy', /^\d+$/.test(hops) ? Number(hops) : hops);
+}
+app.use(httpLogger);
 app.use(express.json());
 
 app.get('/api/health', (req, res) => {
