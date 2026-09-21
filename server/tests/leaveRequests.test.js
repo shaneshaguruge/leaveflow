@@ -283,3 +283,22 @@ describe('cancelling a request', () => {
     expect(res.body.error.code).toBe('FORBIDDEN');
   });
 });
+
+describe('GET /api/balances', () => {
+  test("BUG-004 regression: a pending request in another year does not reserve this year's balance", async () => {
+    const ishara = await loginAs(ISHARA);
+    const balances = async () => (await request(app).get('/api/balances').set('Authorization', `Bearer ${ishara}`))
+      .body.find((b) => b.id === ANNUAL);
+    const before = await balances();
+    const next = new Date().getFullYear() + 1;
+    // A full Mon–Fri week in January next year (5 working days in any year: 2nd Monday onwards).
+    const monday = new Date(Date.UTC(next, 0, 8));
+    monday.setUTCDate(monday.getUTCDate() + ((8 - monday.getUTCDay()) % 7));
+    const iso = (d) => d.toISOString().slice(0, 10);
+    const friday = new Date(monday); friday.setUTCDate(monday.getUTCDate() + 4);
+    expect((await apply(ishara, { start_date: iso(monday), end_date: iso(friday) })).status).toBe(201);
+    const after = await balances();
+    expect(after.pending_days).toBe(before.pending_days);
+    expect(after.remaining_days).toBe(before.remaining_days);
+  });
+});
