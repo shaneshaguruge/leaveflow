@@ -123,4 +123,18 @@ describe('changing the list after approval (AC-21.5, AC-21.6)', () => {
     expect(del.body.not_recharged).toEqual([expect.objectContaining({ id: r.body.id, employee_name: 'Ishara Fernando' })]);
     expect(await usedDays()).toBe(3); // still 3, not 4
   });
+
+  test('demo question: a PM half day ending on a newly added holiday refunds 0.5, not 1.0, and keeps day_part PM', async () => {
+    const r = await request(app).post('/api/leave-requests').set('Authorization', await as(ISHARA))
+      .send({ leave_type_id: ANNUAL, start_date: '2026-10-12', end_date: '2026-10-14', day_part: 'PM' }); // 2.5
+    await request(app).patch(`/api/leave-requests/${r.body.id}`).set('Authorization', await as(RUWAN)).send({ action: 'approve' });
+    expect(await usedDays()).toBe(2.5);
+
+    const add = await request(app).post('/api/holidays').set('Authorization', await as(DILINI))
+      .send({ date: '2026-10-14', name: 'Special holiday' });
+    expect(add.body.adjusted).toEqual([expect.objectContaining({ id: r.body.id, day_part: 'PM', days_before: 2.5, days_after: 2 })]);
+    expect(await usedDays()).toBe(2); // refunded 0.5: only half of the 14th was ever charged
+    const row = await pool.query('SELECT day_part, status FROM leave_requests WHERE id = $1', [r.body.id]);
+    expect(row.rows[0]).toEqual({ day_part: 'PM', status: 'APPROVED' });
+  });
 });

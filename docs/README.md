@@ -72,3 +72,6 @@ Every project document, by Field Guide phase. **Plan** = written but not carried
 |---|---|
 | [`capstone/stories.md`](capstone/stories.md) | US-17…US-21 with acceptance criteria, approved by Nadeesha |
 | [`capstone/design.md`](capstone/design.md) | Mini design doc: `day_part` vs boolean, `public_holidays`, migration down path, API diff, ERD |
+| [`capstone/demo-script.md`](capstone/demo-script.md) | 15-minute demo (2/8/5) covering every acceptance line, rehearsed twice; the unrehearsed question and its live answer |
+| [`capstone/retro.md`](capstone/retro.md) | Rubric walked line by line with evidence; one thing to do differently |
+| [`../server/src/db/down/006_half_day_and_holidays.down.sql`](../server/src/db/down/006_half_day_and_holidays.down.sql) | Written down path for migration 006 |
