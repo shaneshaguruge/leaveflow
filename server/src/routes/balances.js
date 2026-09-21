@@ -2,21 +2,10 @@ const express = require('express');
 const pool = require('../db/pool');
 const { requireAuth } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errors');
+const { leaveDays } = require('../lib/leaveDays');
+const { HOLIDAYS } = require('../lib/holidays');
 const router = express.Router();
 router.use(requireAuth);
-
-// Working days between two dates, inclusive, excluding weekends (Phase 6 extracts this).
-function leaveDays(startDate, endDate) {
-  const cursor = new Date(startDate + 'T00:00:00Z');
-  const end = new Date(endDate + 'T00:00:00Z');
-  let days = 0;
-  while (cursor <= end) {
-    const day = cursor.getUTCDay();
-    if (day !== 0 && day !== 6) days += 1;
-    cursor.setUTCDate(cursor.getUTCDate() + 1);
-  }
-  return days;
-}
 
 router.get('/', asyncHandler(async (req, res) => {
     const userId = req.user.id;
@@ -33,7 +22,7 @@ router.get('/', asyncHandler(async (req, res) => {
       [userId, year]);
     const pendingByType = {};
     for (const r of pending.rows) {
-      pendingByType[r.leave_type_id] = (pendingByType[r.leave_type_id] || 0) + leaveDays(r.start_date, r.end_date);
+      pendingByType[r.leave_type_id] = (pendingByType[r.leave_type_id] || 0) + leaveDays(r.start_date, r.end_date, HOLIDAYS);
     }
     res.json(q.rows.map((b) => {
       const used_days = Number(b.used_days);
