@@ -3,11 +3,12 @@ const pool = require('../db/pool');
 const { requireAuth } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errors');
 const { leaveDays } = require('../lib/leaveDays');
-const { HOLIDAYS } = require('../lib/holidays');
+const { loadHolidays } = require('../lib/holidays');
 const router = express.Router();
 router.use(requireAuth);
 
 router.get('/', asyncHandler(async (req, res) => {
+    const holidays = await loadHolidays();
     const userId = req.user.id;
     const year = new Date().getFullYear();
     const q = await pool.query(
@@ -17,12 +18,12 @@ router.get('/', asyncHandler(async (req, res) => {
        ORDER BY lt.id`,
       [userId, year]);
     const pending = await pool.query(
-      `SELECT leave_type_id, start_date, end_date FROM leave_requests
+      `SELECT leave_type_id, start_date, end_date, day_part FROM leave_requests
        WHERE user_id = $1 AND status = 'PENDING' AND EXTRACT(YEAR FROM start_date) = $2`,
       [userId, year]);
     const pendingByType = {};
     for (const r of pending.rows) {
-      pendingByType[r.leave_type_id] = (pendingByType[r.leave_type_id] || 0) + leaveDays(r.start_date, r.end_date, HOLIDAYS);
+      pendingByType[r.leave_type_id] = (pendingByType[r.leave_type_id] || 0) + leaveDays(r.start_date, r.end_date, holidays, r.day_part);
     }
     res.json(q.rows.map((b) => {
       const used_days = Number(b.used_days);

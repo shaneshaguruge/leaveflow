@@ -1,5 +1,4 @@
 const { leaveDays } = require('../src/lib/leaveDays');
-const { HOLIDAYS } = require('../src/lib/holidays');
 
 describe('leaveDays', () => {
   test('counts a normal Mon-Fri span as 5 days', () => {
@@ -36,17 +35,5 @@ describe('leaveDays', () => {
   test('does not subtract a holiday that falls on a weekend twice', () => {
     // 2026-05-02 (day after Vesak) is a Saturday: Wed 29 Apr - Mon 4 May is still 3.
     expect(leaveDays('2026-04-29', '2026-05-04', ['2026-05-01', '2026-05-02'])).toBe(3);
-  });
-
-  test('the real 2026 holiday list contains Vesak poya', () => {
-    expect(HOLIDAYS).toContain('2026-05-01');
-    expect(leaveDays('2026-04-29', '2026-05-04', HOLIDAYS)).toBe(3);
-  });
-
-  test('every entry in the holiday list is a real YYYY-MM-DD date', () => {
-    for (const day of HOLIDAYS) {
-      expect(day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(new Date(day + 'T00:00:00Z').toISOString().slice(0, 10)).toBe(day);
-    }
   });
 });

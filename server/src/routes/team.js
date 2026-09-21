@@ -4,7 +4,7 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 const { asyncHandler, httpError } = require('../middleware/errors');
 const { isDate } = require('../middleware/validate');
 const { leaveDays } = require('../lib/leaveDays');
-const { HOLIDAYS } = require('../lib/holidays');
+const { loadHolidays } = require('../lib/holidays');
 const router = express.Router();
 
 // Without parameters: the PENDING requests waiting for this manager (the Approvals list), newest first, each with
@@ -15,6 +15,7 @@ const router = express.Router();
 // HR_ADMIN sees everyone.
 router.get('/requests', requireAuth, requireRole('MANAGER', 'HR_ADMIN'), asyncHandler(async (req, res) => {
   const { from, to, history } = req.query;
+  const holidays = await loadHolidays();
   if (history !== undefined) {
     if (history !== 'true') throw httpError(400, 'VALIDATION_ERROR', 'history: must be true');
     const q = await pool.query(
@@ -23,7 +24,7 @@ router.get('/requests', requireAuth, requireRole('MANAGER', 'HR_ADMIN'), asyncHa
        LEFT JOIN users d ON d.id = lr.decided_by
        WHERE lr.status IN ('APPROVED', 'REJECTED') AND (u.manager_id = $1 OR $2 = 'HR_ADMIN')
        ORDER BY lr.decided_at DESC, lr.id DESC`, [req.user.id, req.user.role]);
-    return res.json(q.rows.map((r) => ({ ...r, days: leaveDays(r.start_date, r.end_date, HOLIDAYS) })));
+    return res.json(q.rows.map((r) => ({ ...r, days: leaveDays(r.start_date, r.end_date, holidays, r.day_part) })));
   }
   if (from === undefined && to === undefined) {
     // remaining_days = allocation − used for the request's year (what is left now); approving deducts `days`.
@@ -37,7 +38,7 @@ router.get('/requests', requireAuth, requireRole('MANAGER', 'HR_ADMIN'), asyncHa
        WHERE lr.status = 'PENDING' AND (u.manager_id = $1 OR $2 = 'HR_ADMIN')
        ORDER BY lr.created_at DESC, lr.id DESC`, [req.user.id, req.user.role]);
     return res.json(q.rows.map((r) => {
-      const days = leaveDays(r.start_date, r.end_date, HOLIDAYS);
+      const days = leaveDays(r.start_date, r.end_date, holidays, r.day_part);
       return { ...r, days, remaining_after: Number(r.remaining_days) - days };
     }));
   }
@@ -45,7 +46,7 @@ router.get('/requests', requireAuth, requireRole('MANAGER', 'HR_ADMIN'), asyncHa
   if (!isDate(to)) throw httpError(400, 'VALIDATION_ERROR', 'to: must be YYYY-MM-DD');
   if (to < from) throw httpError(400, 'VALIDATION_ERROR', 'to: must be on or after from');
   const q = await pool.query(
-    `SELECT lr.id, lr.user_id, u.name AS employee_name, lr.leave_type_id, lr.start_date, lr.end_date, lr.status
+    `SELECT lr.id, lr.user_id, u.name AS employee_name, lr.leave_type_id, lr.start_date, lr.end_date, lr.day_part, lr.status
      FROM leave_requests lr JOIN users u ON u.id = lr.user_id
      WHERE lr.status = 'APPROVED' AND lr.start_date <= $2 AND lr.end_date >= $1
        AND (u.manager_id = $3 OR $4 = 'HR_ADMIN')

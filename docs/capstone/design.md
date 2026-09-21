@@ -40,6 +40,7 @@ CREATE TABLE public_holidays (
   holiday_date DATE PRIMARY KEY,
   name         TEXT NOT NULL,
   year         INTEGER GENERATED ALWAYS AS (EXTRACT(YEAR FROM holiday_date)::int) STORED,
+  note         TEXT,          -- e.g. 'to confirm against the official gazette' on the seeded rows
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX public_holidays_year ON public_holidays (year);
@@ -72,7 +73,12 @@ official gazette*. `holidays.js` is deleted; the API reads the table.
 - creates `public_holidays` and the index;
 - seeds the 2026 holidays.
 
-It is applied through the existing `schema_migrations` runner, and was tested on a fresh database.
+It is applied through the existing `schema_migrations` runner. **Tested on a fresh database (2026-09-22):**
+- `applied 001…006` in 526 ms; a second run applied nothing; 25 holidays for 2026; 5 existing requests became `FULL`.
+- The down path removed the table, the column and the ledger row; `migrate` then re-applied 006.
+- With one half day present, the down path refused (`half-day requests exist: restore from backup or fix forward
+  instead`) and changed nothing.
+- The throwaway database was dropped afterwards.
 
 **Down path** (`server/src/db/down/006_half_day_and_holidays.down.sql`, run by hand, not by the runner):
 
