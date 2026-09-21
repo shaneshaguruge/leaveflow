@@ -38,7 +38,7 @@ test('employee applies, manager approves, employee sees APPROVED and her balance
   await expect(form.getByTestId('balance-line'))
     .toHaveText(`= ${DAYS} working days · ${before.remaining - DAYS} remaining`);
   await form.getByLabel('Reason').fill(reason);
-  await form.getByRole('button', { name: 'Apply' }).click();
+  await form.getByRole('button', { name: 'Submit request' }).click();
 
   const myRow = ishara.getByRole('listitem').filter({ hasText: reason });
   await expect(myRow).toContainText('PENDING');

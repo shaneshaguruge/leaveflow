@@ -21,7 +21,7 @@ describe('ApplyLeaveForm', () => {
   test('submit stays disabled until both dates are valid', async () => {
     const user = userEvent.setup();
     render(<ApplyLeaveForm onCreated={() => {}} />);
-    const submit = screen.getByRole('button', { name: /apply/i });
+    const submit = screen.getByRole('button', { name: /submit request/i });
     expect(submit).toBeDisabled();
     await user.type(screen.getByLabelText(/start date/i), '2026-03-02');
     expect(submit).toBeDisabled(); // end date still missing
@@ -35,7 +35,7 @@ describe('ApplyLeaveForm', () => {
     await user.type(screen.getByLabelText(/start date/i), '2026-03-06');
     await user.type(screen.getByLabelText(/end date/i), '2026-03-02');
     expect(screen.getByTestId('balance-line')).toHaveTextContent(/on or after the start date/i);
-    expect(screen.getByRole('button', { name: /apply/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /submit request/i })).toBeDisabled();
   });
 
   test('live balance line counts working days (weekends excluded) against the selected type', async () => {
@@ -57,7 +57,7 @@ describe('ApplyLeaveForm', () => {
     await user.type(screen.getByLabelText(/start date/i), '2026-10-05');
     await user.type(screen.getByLabelText(/end date/i), '2026-10-07');
     await user.type(screen.getByLabelText(/reason/i), 'Trip to Kandy');
-    await user.click(screen.getByRole('button', { name: /apply/i }));
+    await user.click(screen.getByRole('button', { name: /submit request/i }));
     expect(onCreated).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('/api/leave-requests');
@@ -74,8 +74,28 @@ describe('ApplyLeaveForm', () => {
     render(<ApplyLeaveForm balances={balances} onCreated={onCreated} />);
     await user.type(screen.getByLabelText(/start date/i), '2026-10-05');
     await user.type(screen.getByLabelText(/end date/i), '2026-10-07');
-    await user.click(screen.getByRole('button', { name: /apply/i }));
+    await user.click(screen.getByRole('button', { name: /submit request/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Only 6 day(s) of this type left this year');
     expect(onCreated).not.toHaveBeenCalled();
+  });
+
+  test('the submit button reads "Submit request" (wireframe wording)', () => {
+    render(<ApplyLeaveForm onCreated={() => {}} />);
+    expect(screen.getByRole('button', { name: 'Submit request' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Apply' })).not.toBeInTheDocument();
+  });
+
+  test('Cancel clears the draft, sends nothing, and asks to go back to My requests', async () => {
+    const user = userEvent.setup();
+    const fetchMock = mockFetch(201, {});
+    const onCancel = vi.fn();
+    render(<ApplyLeaveForm balances={balances} onCreated={() => {}} onCancel={onCancel} />);
+    await user.type(screen.getByLabelText(/start date/i), '2026-10-05');
+    await user.type(screen.getByLabelText(/reason/i), 'Changed my mind');
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.getByLabelText(/start date/i)).toHaveValue('');
+    expect(screen.getByLabelText(/reason/i)).toHaveValue('');
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
