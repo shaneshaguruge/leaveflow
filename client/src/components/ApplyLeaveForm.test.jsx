@@ -4,7 +4,7 @@ import { afterEach, describe, test, expect, vi } from 'vitest';
 import ApplyLeaveForm from './ApplyLeaveForm';
 
 const balances = [
-  { id: 1, name: 'Annual', annual_allocation: 14, used_days: 2, pending_days: 0, remaining_days: 12 },
+  { id: 1, name: 'Annual', annual_allocation: 14, used_days: 4, pending_days: 0, remaining_days: 10 },
   { id: 2, name: 'Casual', annual_allocation: 7, used_days: 0, pending_days: 1, remaining_days: 6 },
   { id: 3, name: 'Sick', annual_allocation: 7, used_days: 0, pending_days: 0, remaining_days: 7 },
 ];
@@ -41,10 +41,10 @@ describe('ApplyLeaveForm', () => {
   test('live balance line counts working days (weekends excluded) against the selected type', async () => {
     const user = userEvent.setup();
     render(<ApplyLeaveForm balances={balances} onCreated={() => {}} />);
-    // Fri 2 Oct .. Tue 6 Oct 2026 = Fri, Mon, Tue = 3 working days; Annual has 12 remaining
+    // Fri 2 Oct .. Tue 6 Oct 2026 = Fri, Mon, Tue = 3 working days; fixture Annual has 10 remaining
     await user.type(screen.getByLabelText(/start date/i), '2026-10-02');
     await user.type(screen.getByLabelText(/end date/i), '2026-10-06');
-    expect(screen.getByTestId('balance-line')).toHaveTextContent('= 3 working days · 9 remaining');
+    expect(screen.getByTestId('balance-line')).toHaveTextContent('= 3 working days · 7 remaining');
     await user.selectOptions(screen.getByLabelText(/leave type/i), 'Casual');
     expect(screen.getByTestId('balance-line')).toHaveTextContent('= 3 working days · 3 remaining');
   });

@@ -1,5 +1,6 @@
 // Working days between two YYYY-MM-DD dates, inclusive, weekends excluded.
-// Mirrors the server's leaveDays() so the form can preview what the API will charge.
+// Previews what the API will charge. Public holidays (poya days etc.) are NOT reflected here yet:
+// the server skips them, so for ranges containing a holiday the API's count is authoritative.
 export function workingDays(startDate, endDate) {
   if (!isIsoDate(startDate) || !isIsoDate(endDate) || endDate < startDate) return 0;
   const cursor = new Date(startDate + 'T00:00:00Z');
