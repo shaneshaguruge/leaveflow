@@ -60,6 +60,8 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 
 - Phase 6 seeded bug hunt — planted by a subagent mentor (3 bugs on branch `bughunt`, answer key outside the repo). Found 3/3 by testing and reading: BUG-002 overlap off-by-one (#46), BUG-003 missing 403 on reject (#47), BUG-004 balance counts other years' pending (#48). Full reports `docs/bug-report-002…004.md`; regression tests carried to main (Jest 57/57); `bughunt` deleted, never merged to main.
 
+- Project docs (2026-09-22): root `README.md` (run with/without Docker, demo logins, tests), `CHANGELOG.md` (by phase, real PRs and merge times), `docs/decisions.md` (ADR-1…9), `docs/README.md` (index of every doc), `docs/bug-reports.md` (BUG-001…004); stale lines fixed in `security-audit.md` (27 `query(` calls), `api.md`, `requirements.md`, `branch-protection.md`, `runbook.md`, `postmortem-template.md`, bug reports 002–004; `npm run db` now also creates `leaveflow_e2e`.
+
 ## Skipped or blocked, and why
 - Phase 0 `ssh -T git@github.com`: not reached — key generated, not added to GitHub; HTTPS via `gh` used instead.
 - Phase 6 manual execution of TC-01…TC-05: not reached — written, marked "not run yet".

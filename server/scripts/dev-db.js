@@ -3,7 +3,7 @@
 // on machines where Docker isn't available. The API only ever sees DATABASE_URL,
 // so any other Postgres 16 (Docker, a service container in CI, RDS) works unchanged.
 //
-//   npm run db        start it (creates the cluster and both databases on first run)
+//   npm run db        start it (creates the cluster and the dev, test and e2e databases on first run)
 //   npm run db:stop   stop it cleanly from another terminal
 require('dotenv').config();
 const fs = require('fs');
@@ -13,7 +13,7 @@ const { execFileSync } = require('child_process');
 const url = new URL(process.env.DATABASE_URL || 'postgres://postgres:leaveflow_dev@localhost:5432/leaveflow');
 const DATA_DIR = path.join(__dirname, '..', '.pgdata');
 const PORT = Number(url.port || 5432);
-const DATABASES = [url.pathname.slice(1), 'leaveflow_test'];
+const DATABASES = [url.pathname.slice(1), 'leaveflow_test', 'leaveflow_e2e']; // dev, Jest, Playwright
 
 async function stop() {
   const platform = `@embedded-postgres/${process.platform === 'win32' ? 'windows' : process.platform}-${process.arch}`;

@@ -75,5 +75,5 @@ someone is with you. **Mitigate first, diagnose second** — the logs will still
 | Role | Who |
 |---|---|
 | Service owner / on-call | Shanesha (intern) |
-| Mentor / escalation | mentor (named at go-live) |
+| Escalation | project owner (named at go-live) |
 | Business owner | Nadeesha Perera (HR Manager) |

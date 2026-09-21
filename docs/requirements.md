@@ -181,7 +181,7 @@ US-16 As a manager, when reviewing a request, I want to see approved leaves from
 |---|---|
 | **Must** | US-1 login, US-2 apply, US-3 balances, US-4 approve/reject, US-5 cancel pending, US-10 request status |
 | **Should** | US-8 email notifications, US-9 HR oversight view, US-11 finance report, RULE-1 medical certificate, US-16 who else is off (built, PR for issue #31) |
-| **Could** | US-6 configure leave types, US-7 team calendar, US-12 export, US-13 unused leave, US-14 upload, US-15 shutdown dates, RULE-2/3 |
+| **Could** | US-6 configure leave types, US-7 team calendar, US-12 export (built as Export CSV, PR #41), US-13 unused leave, US-14 upload, US-15 shutdown dates, RULE-2/3 |
 | **Won't (this time)** | Payroll, WhatsApp integration, native mobile app (responsive web instead) |
 
 The Must list alone is a usable product.
@@ -201,7 +201,7 @@ The Must list alone is a usable product.
 5. For the finance report: can you send last year's hand-made report so we
    build exactly what finance already uses?
 
-### Assumed answers (demo project — confirm with mentor)
+### Assumed answers (demo project — to confirm with Nadeesha)
 
 | Q | Assumption | Status |
 |---|---|---|

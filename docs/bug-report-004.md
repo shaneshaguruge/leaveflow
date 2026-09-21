@@ -7,7 +7,7 @@
 | **Component** | `server/src/routes/balances.js` — pending-days query |
 | **Severity** | **Medium** — wrong balance shown to the employee and used by the apply form's "N remaining" preview; nothing is deducted wrongly in the database |
 | **Priority** | **High** — employees plan next year's leave in Q4 (e.g. the New Year week), exactly when this shows |
-| **Status** | **Fixed** in the PR from `fix/balance-pending-year` into `bughunt`, with a regression test |
+| **Status** | **Fixed** in PR #48 (`fix/balance-pending-year` into the throwaway `bughunt` branch); the regression test is on `main` since PR #49 |
 
 ## Steps to reproduce
 

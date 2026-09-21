@@ -50,7 +50,7 @@ Any other 4xx without an app-specific code uses its HTTP status name in the same
 
 Any other path under `/api` → `404 {"error":{"code":"NOT_FOUND","message":"No such endpoint"}}`.
 
-**Not in v1:** US-6 (configure leave types), US-7 (team calendar), US-8 (email — no endpoint), US-11–13 (finance
+**Not in v1:** US-6 (configure leave types), US-7 (team calendar), US-8 (email — no endpoint), US-11 and US-13 (finance
 reports), US-14–15. There is **no DELETE** endpoint: cancelling is `PATCH {"action":"cancel"}`.
 
 ---

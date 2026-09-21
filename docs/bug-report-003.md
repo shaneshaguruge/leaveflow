@@ -7,7 +7,7 @@
 | **Component** | `server/src/routes/leaveRequests.js` — permission checks in `PATCH /:id` |
 | **Severity** | **High** — broken access control (OWASP A01): any manager can decide another team's (or their own) leave; the decision is final and cannot be undone |
 | **Priority** | **High** — security rule from `api.md` §3 ("reject: the requester's manager, or HR_ADMIN") |
-| **Status** | **Fixed** in the PR from `fix/reject-not-your-report` into `bughunt`, with a regression test |
+| **Status** | **Fixed** in PR #47 (`fix/reject-not-your-report` into the throwaway `bughunt` branch); the regression test is on `main` since PR #49 |
 
 ## Steps to reproduce
 
