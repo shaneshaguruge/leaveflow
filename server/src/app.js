@@ -15,7 +15,7 @@ const findRequest = (id) =>
   db.prepare('SELECT * FROM leave_requests WHERE id = ?').get(id);
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({ status: 'ok', version: '0.4.0' });
 });
 
 app.get('/api/leave-requests', (req, res) => {
