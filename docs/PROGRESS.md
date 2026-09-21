@@ -10,8 +10,8 @@ Proofs for Phases 6, 7, 8 and 10 were re-run on 2026-09-21; the Docker (Phase 7)
 | Phase | Done `[x]` | Done differently `[~]` | Not done `[ ]` | Total |
 |---|---:|---:|---:|---:|
 | 0 Foundations & Setup | 4 | 2 | 1 | 7 |
-| 1 Requirements | 6 | 0 | 1 | 7 |
-| 2 Design & Modeling | 5 | 2 | 0 | 7 |
+| 1 Requirements | 7 | 0 | 0 | 7 |
+| 2 Design & Modeling | 6 | 1 | 0 | 7 |
 | 3 Build v0 | 7 | 0 | 0 | 7 |
 | 4 Git & Collaboration | 5 | 0 | 2 | 7 |
 | 5 The 3-Tier Build | 7 | 0 | 1 | 8 |
@@ -21,9 +21,9 @@ Proofs for Phases 6, 7, 8 and 10 were re-run on 2026-09-21; the Docker (Phase 7)
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
 | Capstone (rubric 9 + checklist 8) | 0 | 0 | 17 | 17 |
-| **Total** | **51** | **6** | **38** | **95** |
+| **Total** | **53** | **5** | **37** | **95** |
 
-Row check: 51 + 6 + 38 = 95; every row's three columns add up to its total.
+Row check: 53 + 5 + 37 = 95; every row's three columns add up to its total.
 
 ## Phase 0 — Foundations & Setup (7)
 - [ ] I can navigate, create files, and use a pipe in the terminal without looking anything up — self-assessed; not claimed here
@@ -41,12 +41,12 @@ Row check: 51 + 6 + 38 = 95; every row's three columns add up to its total.
 - [x] Every story MoSCoW-tagged, with a written Won't-have list including payroll
 - [x] Five clarifying questions drafted, including the approval-flow contradiction
 - [x] NFR-1…NFR-5 recorded, including the honest 60-user scale note
-- [ ] A paper wireframe of the Apply-for-leave screen exists (photo saved) — text wireframes only; no photo yet
+- [x] A paper wireframe of the Apply-for-leave screen exists (photo saved) — `docs/wireframes/apply-for-leave.jpeg` (paper, photographed), plus login, manager approvals, my requests and HR all requests in `docs/wireframes/`; indexed in `requirements.md` §7
 
 ## Phase 2 — Design & Modeling (7)
 - [x] Paper ERD drawn and reconciled with the canonical four-table schema (PKs and FKs labeled) — `docs/ERD.jpeg`, hand-drawn
-- [~] Request state machine drawn with all four states and each transition's actor — committed version is digital; a paper version exists but is not committed yet
-- [~] "Apply for leave" sequence diagram shows validate → balance check → insert → 201, in that order — committed version is digital; the uncommitted paper version has no final 201 arrow
+- [x] Request state machine drawn with all four states and each transition's actor — paper, `docs/diagrams/state-machine.jpeg`: PENDING, APPROVED, REJECTED, CANCELLED; apply (employee/owner), approve and reject (manager or HR_ADMIN), cancel (owner only, while PENDING); APPROVED → CANCELLED marked "not allowed"
+- [~] "Apply for leave" sequence diagram shows validate → balance check → insert → 201, in that order — paper, `docs/diagrams/sequence-diagram.jpeg`: POST → validate → overlap check → SELECT balance → balance check → INSERT, **but no final 201 arrow yet**; the text sequence in `design.md` §4 has the full order including `201 Created`. The old digital PNG was removed
 - [x] docs/api.md committed with the endpoint table, PATCH action rules, and one full request/response example
 - [x] The `{ "error": { "code", "message" } }` envelope is documented at the top of the contract
 - [x] docs/design.md committed with context, decisions, alternatives, and risks filled in
