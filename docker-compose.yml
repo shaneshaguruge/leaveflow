@@ -1,0 +1,41 @@
+# LeaveFlow full stack: docker compose up --build -d, then open http://localhost:8080
+#
+# First run (and after `docker compose down -v`), apply the schema AND the seed data:
+#   docker compose exec api npm run migrate
+# There is no separate `npm run seed`: the seed data lives in migrations 002_seed.sql and
+# 003_seed_demo.sql, so `npm run migrate` applies them. It is idempotent (schema_migrations
+# records what already ran), so running it again is safe.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: leaveflow
+      POSTGRES_PASSWORD: leaveflow
+      POSTGRES_DB: leaveflow
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leaveflow"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./server
+    environment:
+      DATABASE_URL: postgres://leaveflow:leaveflow@db:5432/leaveflow
+      JWT_SECRET: dev-only-secret
+      PORT: "4000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./client
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+volumes:
+  dbdata:
