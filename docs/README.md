@@ -10,7 +10,7 @@ Every project document, by Field Guide phase. **Plan** = written but not carried
 | [`STATUS.md`](STATUS.md) | Where the project stands: done, skipped and why, next steps, known issues |
 | [`PROGRESS.md`](PROGRESS.md) | All 95 guide checkboxes with the proof for each |
 | [`../CHANGELOG.md`](../CHANGELOG.md) | Every change by phase, with PR numbers and merge times |
-| [`decisions.md`](decisions.md) | Decision log (ADR-1…9) |
+| [`decisions.md`](decisions.md) | Decision log (ADR-1…10) |
 
 ## Phase 1 — Requirements
 
@@ -65,3 +65,10 @@ Every project document, by Field Guide phase. **Plan** = written but not carried
 | [`runbook.md`](runbook.md) | Incident runbook: severities, symptoms, first checks |
 | [`backup-restore-drill.md`](backup-restore-drill.md) | **Plan:** RDS snapshot restore drill |
 | [`postmortem-template.md`](postmortem-template.md) | Blameless post-mortem template (no incident yet) |
+
+## Capstone — half-day leave and public holidays
+
+| Doc | What it is |
+|---|---|
+| [`capstone/stories.md`](capstone/stories.md) | US-17…US-21 with acceptance criteria, approved by Nadeesha |
+| [`capstone/design.md`](capstone/design.md) | Mini design doc: `day_part` vs boolean, `public_holidays`, migration down path, API diff, ERD |
