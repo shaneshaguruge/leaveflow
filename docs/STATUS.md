@@ -1,7 +1,7 @@
 # LeaveFlow — Status
 
-**Last updated:** 2026-09-21 · **Stopped at:** stale docs refreshed + US-4 reject test (PR #30); Nadeesha's overlap feature US-16 built through story → PR #32 → CI. Not deployed anywhere (no staging, no prod).
-Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **53 done · 5 done differently · 37 not done**. No PR has been reviewed by a human.
+**Last updated:** 2026-09-21 · **Stopped at:** paper wireframes committed (PR #33) and the five wireframe gaps closed (PRs #39–#43); `main` = `11ee499`, CI and Release green. Not deployed anywhere (no staging, no prod).
+Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **52 done · 5 done differently · 38 not done**. No PR has been reviewed by a human.
 
 | Phase | Done | Done differently | Not done | Total |
 |---|---:|---:|---:|---:|
@@ -9,15 +9,15 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 | 1 Requirements | 7 | 0 | 0 | 7 |
 | 2 Design & Modeling | 6 | 1 | 0 | 7 |
 | 3 Build v0 | 7 | 0 | 0 | 7 |
-| 4 Git & Collaboration | 5 | 0 | 2 | 7 |
+| 4 Git & Collaboration | 4 | 1 | 2 | 7 |
 | 5 The 3-Tier Build | 7 | 0 | 1 | 8 |
 | 6 Testing & Quality | 6 | 0 | 1 | 7 |
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
-| 8 CI/CD | 4 | 1 | 1 | 6 |
+| 8 CI/CD | 4 | 0 | 2 | 6 |
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
 | Capstone (rubric 9 + checklist 8) | 0 | 0 | 17 | 17 |
-| **Total** | **53** | **5** | **37** | **95** |
+| **Total** | **52** | **5** | **38** | **95** |
 
 ## Completed
 - Phase 0: Git 2.53.0 configured (`shaneshaguruge` / `shanesha@arozentech.com`, `main`, `autocrlf=input`); Node v24.14.0; npm 11.19.1; VS Code + 4 extensions; `gh` logged in.
@@ -53,13 +53,16 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 
 - Phase 1–2: five paper wireframes committed to `docs/wireframes/` (login, apply-for-leave, manager-approvals, my-requests, hr-all-requests); paper state machine and sequence diagram in `docs/diagrams/`; the old digital `sequence-diagram.png`, `state-machine.jpg` and `state-machine.png` removed. Phase 1 is 7/7.
 
+- Wireframe gaps closed, one PR each, each with tests and merged on green: HR names (#39, issue #34); HR Type filter + Decided by (#40, #35); Export CSV US-12 (#41, #36: `GET /api/reports/leave-requests.csv`, HR only, CSV-injection guarded); Approvals balance after / newest first / history (#42, #37); Apply "Submit request" + Cancel (#43, #38). Jest 54/54, Vitest 23/23, Playwright 3/3; CI https://github.com/shaneshaguruge/leaveflow/actions/runs/35630556232.
+- Records correction 2026-09-21: Phase 4 "fresh clone runs with npm install && npm run dev" is now `[~]` (works in `server/` and `client/`, not from the root); Phase 8 branch protection is now `[ ]` (the "one review" part needs a human reviewer).
+
 ## Skipped or blocked, and why
 - Phase 0 `ssh -T git@github.com`: not reached — key generated, not added to GitHub; HTTPS via `gh` used instead.
-- Mentor review of PRs #11–#32: needs mentor — no PR has been reviewed by a human; leaves Phase 4 items 3–4 and Phase 5 item 8 unticked.
+- Mentor review of PRs #11–#43: needs mentor — no PR has been reviewed by a human; leaves Phase 4 items 3–4 and Phase 5 item 8 unticked.
 - Phase 6 three seeded bugs: needs mentor.
 - Phase 6 manual execution of TC-01…TC-05: not reached — written, marked "not run yet".
 - Phase 7 in-browser login during the new-machine test: not done by me (entering passwords in web forms is left to the user); proven through the same endpoint with curl.
-- Phase 8 "one review" rule: approvals set to 0 by decision (solo developer; one approval would lock the owner out) — for the mentor to decide.
+- Phase 8 "one review" rule: approvals set to 0 by decision (solo developer; one approval would lock the owner out) — for the mentor to decide; the checkbox stays unticked until a review is required.
 - Phase 9 Render and AWS deployment: needs AWS or Render account and a paid resource.
 - Phase 10 CloudWatch alarm, SNS, snapshot restore drill: needs AWS account and a paid resource.
 - Phase 10 staged incident: needs mentor.
@@ -69,7 +72,8 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 ## Still to do, and who
 - Phase 0 — [me] add the SSH key to GitHub (optional); [me] self-assess terminal fluency.
 - Phase 2 — [me] add the final `201 Created` arrow (API → Browser) to the paper sequence diagram, re-photograph it and replace `docs/diagrams/sequence-diagram.jpeg` via a PR.
-- Phase 4–5 — [mentor] review merged PRs #11–#32; [me] ask Nadeesha to confirm Q1 and R5 (HR approving own leave).
+- Phase 4 — [me] optional: a README and a root `dev` script so `npm install && npm run dev` works from the repo root.
+- Phase 4–5 — [mentor] review merged PRs #11–#43; [me] ask Nadeesha to confirm Q1 and R5 (HR approving own leave).
 - Phase 6 — [mentor] seed three bugs; [me] find, report and fix them via PRs; [me] run TC-01…TC-05 by hand.
 - Phase 7 — [me] log in once in the browser at http://localhost:8080 to complete the new-machine item.
 - Phase 8 — [me] answer "why npm ci"; [mentor] decide whether to require 1 approval.
@@ -81,7 +85,6 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Docker Desktop crashed on start: `starting services: initializing Inference manager: listening on unix://<HOME>\AppData\Local\Docker\run\dockerInference: remove …: The file cannot be accessed by the system.` Fixed by the user on 2026-09-21; a leftover folder `%LOCALAPPDATA%\Docker\run.stale-20260921` with two stale socket files remains.
 - Running `npm ci` in `server/` while `npm run db` is running fails (EPERM on the Postgres binaries in `node_modules/@embedded-postgres`); stop the DB first or use `npm install`.
 - `server/src/lib/holidays.js`: 2026-05-02 marked `TODO verify`; only 2026 is loaded.
-- The client's live "= N working days" line counts weekends only; the server also excludes holidays and is the authority.
-- HR "All requests" page shows `Employee #id` — the list endpoint returns no employee names.
+- The apply form's live "= N working days" line and the My requests list count weekends only; the server also excludes holidays and is the authority (the HR and Approvals pages now show the server count).
 - HR_ADMIN can approve their own leave (design risk R5) — policy question for Nadeesha.
 - CI annotation: `The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026.`
