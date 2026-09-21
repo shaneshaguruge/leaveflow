@@ -2,10 +2,11 @@ const { test, expect } = require('@playwright/test');
 
 const PASSWORD = 'password123';
 const ANNUAL = 1;
-// Mon 5 – Wed 7 Oct 2026: three weekdays, no Sri Lankan public holiday, no overlap with seeded requests.
-const START = '2026-10-05';
-const END = '2026-10-07';
-const DAYS = 3;
+// Capstone demo flow: a Friday-afternoon half day. Fri 9 Oct 2026 is a weekday, not a public holiday, and overlaps no
+// seeded request. It costs 0.5 of Annual.
+const START = '2026-10-09';
+const END = '2026-10-09';
+const DAYS = 0.5;
 
 // Each user gets their own browser context, so their tokens (localStorage) never mix.
 async function login(browser, email) {
@@ -21,12 +22,12 @@ async function login(browser, email) {
 
 async function annualCard(page) {
   const read = async (id) => Number(await page.getByTestId(`${id}-${ANNUAL}`).innerText());
-  await expect(page.getByTestId(`remaining-${ANNUAL}`)).toHaveText(/^-?\d+$/);
+  await expect(page.getByTestId(`remaining-${ANNUAL}`)).toHaveText(/^-?\d+(\.\d+)?$/);
   return { remaining: await read('remaining'), used: await read('used'), reserved: await read('reserved') };
 }
 
-test('employee applies, manager approves, employee sees APPROVED and her balance change', async ({ browser }) => {
-  const reason = `Trip to Kandy ${Date.now()}`;
+test('employee books a Friday-afternoon half day, manager sees PM and approves, 0.5 leaves her balance', async ({ browser }) => {
+  const reason = `School meeting ${Date.now()}`;
 
   // Ishara applies
   const ishara = await login(browser, 'ishara@ceylonroots.lk');
@@ -35,6 +36,7 @@ test('employee applies, manager approves, employee sees APPROVED and her balance
   await form.getByLabel('Leave type').selectOption({ label: 'Annual' });
   await form.getByLabel('Start date').fill(START);
   await form.getByLabel('End date').fill(END);
+  await form.getByRole('radio', { name: 'Afternoon' }).check();
   await expect(form.getByTestId('balance-line'))
     .toHaveText(`= ${DAYS} working days · ${before.remaining - DAYS} remaining`);
   await form.getByLabel('Reason').fill(reason);
@@ -42,6 +44,8 @@ test('employee applies, manager approves, employee sees APPROVED and her balance
 
   const myRow = ishara.getByRole('listitem').filter({ hasText: reason });
   await expect(myRow).toContainText('PENDING');
+  await expect(myRow).toContainText(`${END} PM`);
+  await expect(myRow).toContainText('0.5 days');
   await expect(ishara.getByTestId(`reserved-${ANNUAL}`)).toHaveText(String(before.reserved + DAYS));
   await expect(ishara.getByTestId(`remaining-${ANNUAL}`)).toHaveText(String(before.remaining - DAYS));
 
@@ -50,10 +54,14 @@ test('employee applies, manager approves, employee sees APPROVED and her balance
   await ruwan.getByRole('navigation').getByRole('button', { name: 'Approvals' }).click();
   const inbox = ruwan.getByRole('listitem').filter({ hasText: reason });
   await expect(inbox).toContainText('Ishara Fernando');
+  // Managers see AM or PM, not just the date (Nadeesha's acceptance list).
+  await expect(inbox.getByText('PM', { exact: true })).toBeVisible();
+  await expect(inbox).toContainText(`${END} PM`);
+  await expect(inbox).toContainText('Annual · 0.5 days');
   // Balance before and after approving (allocation − used; her own pending days are not deducted yet).
   const left = before.remaining + before.reserved;
   await expect(inbox).toContainText(`Annual balance ${left} → ${left - DAYS} after`);
-  // US-16: before deciding, Ruwan sees who else on his team is off. Nobody overlaps 5–7 Oct...
+  // US-16: before deciding, Ruwan sees who else on his team is off. Nobody overlaps 9 Oct...
   await expect(inbox.getByRole('region', { name: 'Team that week' })).toContainText('No one else is off');
   // ...while the seeded Bank appointment (16 Nov) overlaps Kasun's seeded approved leave (16–18 Nov).
   const bankDay = ruwan.getByRole('listitem').filter({ hasText: 'Bank appointment' });
