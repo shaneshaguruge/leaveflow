@@ -50,6 +50,9 @@ test('employee applies, manager approves, employee sees APPROVED and her balance
   await ruwan.getByRole('navigation').getByRole('button', { name: 'Approvals' }).click();
   const inbox = ruwan.getByRole('listitem').filter({ hasText: reason });
   await expect(inbox).toContainText('Ishara Fernando');
+  // Balance before and after approving (allocation − used; her own pending days are not deducted yet).
+  const left = before.remaining + before.reserved;
+  await expect(inbox).toContainText(`Annual balance ${left} → ${left - DAYS} after`);
   // US-16: before deciding, Ruwan sees who else on his team is off. Nobody overlaps 5–7 Oct...
   await expect(inbox.getByRole('region', { name: 'Team that week' })).toContainText('No one else is off');
   // ...while the seeded Bank appointment (16 Nov) overlaps Kasun's seeded approved leave (16–18 Nov).
