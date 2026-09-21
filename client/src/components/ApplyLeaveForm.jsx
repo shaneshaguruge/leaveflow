@@ -3,14 +3,17 @@ import { api } from '../api';
 import { isIsoDate, plural, workingDays } from '../leaveDays';
 import { DEFAULT_LEAVE_TYPES } from '../leaveTypes';
 
-const EMPTY = { leave_type_id: '1', start_date: '', end_date: '', reason: '' };
+const EMPTY = { leave_type_id: '1', start_date: '', end_date: '', reason: '', day_part: 'FULL' };
+// Half days are for Annual and Casual leave only (Nadeesha, story review OQ-5).
+const HALF_DAY_TYPES = ['Annual', 'Casual'];
+const DAY_PARTS = [['FULL', 'Full day'], ['AM', 'Morning'], ['PM', 'Afternoon']];
 
 // Client-side checks mirror the server for fast feedback; the server re-checks everything and stays the authority.
-function validateDates(start, end) {
+function validateDates(start, end, dayPart) {
   if (!start || !end) return 'Both dates are required';
   if (!isIsoDate(start) || !isIsoDate(end)) return 'Dates must be YYYY-MM-DD';
   if (end < start) return 'End date must be on or after the start date';
-  if (workingDays(start, end) === 0) return 'Those dates contain no working days';
+  if (workingDays(start, end, dayPart) === 0) return 'Those dates contain no working days';
   return null;
 }
 
@@ -22,9 +25,12 @@ export default function ApplyLeaveForm({ balances = [], onCreated = () => {}, on
 
   const types = balances.length ? balances : DEFAULT_LEAVE_TYPES;
   const selected = balances.find((b) => String(b.id) === form.leave_type_id);
-  const dateError = validateDates(form.start_date, form.end_date);
+  const typeLabel = types.find((t) => String(t.id) === form.leave_type_id)?.name;
+  const halfAllowed = HALF_DAY_TYPES.includes(typeLabel);
+  const dayPart = halfAllowed ? form.day_part : 'FULL';
+  const dateError = validateDates(form.start_date, form.end_date, dayPart);
   const bothDates = Boolean(form.start_date && form.end_date);
-  const days = dateError ? 0 : workingDays(form.start_date, form.end_date);
+  const days = dateError ? 0 : workingDays(form.start_date, form.end_date, dayPart);
   const left = selected ? selected.remaining_days - days : null;
 
   // Cancel: throw the draft away and go back to the My requests list.
@@ -41,7 +47,7 @@ export default function ApplyLeaveForm({ balances = [], onCreated = () => {}, on
     try {
       await api('/leave-requests', {
         method: 'POST',
-        body: { ...form, leave_type_id: Number(form.leave_type_id) },
+        body: { ...form, leave_type_id: Number(form.leave_type_id), day_part: dayPart },
       });
       setError(null);
       setForm(EMPTY);
@@ -73,6 +79,18 @@ export default function ApplyLeaveForm({ balances = [], onCreated = () => {}, on
             onChange={update('end_date')} required />
         </label>
       </div>
+      {halfAllowed && (
+        <fieldset className="day-part">
+          <legend>Day{form.start_date !== form.end_date && form.end_date ? ` (last day, ${form.end_date})` : ''}</legend>
+          {DAY_PARTS.map(([value, label]) => (
+            <label key={value} className="inline">
+              <input type="radio" name="day_part" value={value} checked={form.day_part === value}
+                onChange={update('day_part')} />
+              {label}
+            </label>
+          ))}
+        </fieldset>
+      )}
       {bothDates && (dateError ? (
         <p className="hint hint-bad" data-testid="balance-line">{dateError}</p>
       ) : (

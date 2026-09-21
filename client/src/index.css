@@ -164,3 +164,10 @@ nav { display: flex; gap: 4px; max-width: 728px; margin: 8px auto 0; overflow-x:
 /* Apply form: Submit request + a Cancel link beside it */
 .form-actions { display: flex; align-items: center; gap: 16px; }
 .form-actions .btn { flex: 1; }
+
+/* Apply form: Full day / Morning / Afternoon (Capstone US-17) */
+.day-part { border: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0 20px; }
+.day-part legend { font-weight: 600; font-size: 0.95rem; padding: 0; margin-bottom: 4px; }
+.day-part label.inline { margin-bottom: 0; font-weight: 400; min-height: var(--tap); }
+.day-part input[type="radio"] { width: 20px; height: 20px; margin: 0; }
+.badge-half { color: var(--primary); margin-left: 8px; vertical-align: middle; }
