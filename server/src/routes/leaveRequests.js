@@ -4,11 +4,12 @@ const { requireAuth } = require('../middleware/auth');
 const { asyncHandler, httpError } = require('../middleware/errors');
 const { validate, required, isDate, onOrAfter } = require('../middleware/validate');
 const { leaveDays } = require('../lib/leaveDays');
-const { HOLIDAYS } = require('../lib/holidays');
+const { loadHolidays } = require('../lib/holidays');
 const router = express.Router();
 router.use(requireAuth);
 
 router.get('/', asyncHandler(async (req, res) => {
+  const holidays = await loadHolidays();
   // employee_name and decided_by_name: the HR "All requests" page shows names, not user ids.
   const q = await pool.query(
     `SELECT lr.*, u.name AS employee_name, d.name AS decided_by_name
@@ -17,7 +18,7 @@ router.get('/', asyncHandler(async (req, res) => {
      WHERE lr.user_id = $1 OR $2 = 'HR_ADMIN'
      ORDER BY lr.created_at DESC`, [req.user.id, req.user.role]);
   // days: working days with weekends AND public holidays excluded — the number the balance uses.
-  res.json(q.rows.map((r) => ({ ...r, days: leaveDays(r.start_date, r.end_date, HOLIDAYS) })));
+  res.json(q.rows.map((r) => ({ ...r, days: leaveDays(r.start_date, r.end_date, holidays, r.day_part) })));
 }));
 
 router.post('/', validate([
@@ -28,7 +29,8 @@ router.post('/', validate([
 ]), asyncHandler(async (req, res) => {
   const { leave_type_id, start_date, end_date, reason } = req.body;
   const userId = req.user.id; // always the logged-in user; any user_id in the body is ignored
-  const requested = leaveDays(start_date, end_date, HOLIDAYS);
+  const holidays = await loadHolidays();
+  const requested = leaveDays(start_date, end_date, holidays);
   if (requested === 0) throw httpError(400, 'VALIDATION_ERROR', 'the dates contain no working days');
 
   const lt = await pool.query('SELECT annual_allocation FROM leave_types WHERE id = $1', [leave_type_id]);
@@ -49,10 +51,10 @@ router.post('/', validate([
      WHERE user_id = $1 AND leave_type_id = $2 AND year = $3`, [userId, leave_type_id, year]);
   const used = bal.rowCount ? Number(bal.rows[0].used_days) : 0;
   const pendingRows = await pool.query(
-    `SELECT start_date, end_date FROM leave_requests
+    `SELECT start_date, end_date, day_part FROM leave_requests
      WHERE user_id = $1 AND leave_type_id = $2 AND status = 'PENDING'
        AND EXTRACT(YEAR FROM start_date) = $3`, [userId, leave_type_id, year]);
-  const pending = pendingRows.rows.reduce((sum, r) => sum + leaveDays(r.start_date, r.end_date, HOLIDAYS), 0);
+  const pending = pendingRows.rows.reduce((sum, r) => sum + leaveDays(r.start_date, r.end_date, holidays, r.day_part), 0);
   const left = lt.rows[0].annual_allocation - used - pending;
   if (requested > left) {
     throw httpError(409, 'INSUFFICIENT_BALANCE', `Only ${Math.max(left, 0)} day(s) of this type left this year`);
@@ -101,7 +103,7 @@ router.patch('/:id', validate([
        VALUES ($1, $2, $3, $4) ON CONFLICT (user_id, leave_type_id, year)
        DO UPDATE SET used_days = leave_balances.used_days + EXCLUDED.used_days
        RETURNING used_days`,
-      [r.user_id, r.leave_type_id, Number(r.start_date.slice(0, 4)), leaveDays(r.start_date, r.end_date, HOLIDAYS)]);
+      [r.user_id, r.leave_type_id, Number(r.start_date.slice(0, 4)), leaveDays(r.start_date, r.end_date, await loadHolidays(client), r.day_part)]);
     const lt = await client.query('SELECT annual_allocation FROM leave_types WHERE id = $1', [r.leave_type_id]);
     if (Number(bal.rows[0].used_days) > lt.rows[0].annual_allocation) {
       throw httpError(409, 'INSUFFICIENT_BALANCE', 'Approving this would exceed the annual allocation');
