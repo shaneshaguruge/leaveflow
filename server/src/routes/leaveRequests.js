@@ -9,10 +9,11 @@ const router = express.Router();
 router.use(requireAuth);
 
 router.get('/', asyncHandler(async (req, res) => {
-  // employee_name: the HR "All requests" page shows names, not user ids.
+  // employee_name and decided_by_name: the HR "All requests" page shows names, not user ids.
   const q = await pool.query(
-    `SELECT lr.*, u.name AS employee_name
+    `SELECT lr.*, u.name AS employee_name, d.name AS decided_by_name
      FROM leave_requests lr JOIN users u ON u.id = lr.user_id
+     LEFT JOIN users d ON d.id = lr.decided_by
      WHERE lr.user_id = $1 OR $2 = 'HR_ADMIN'
      ORDER BY lr.created_at DESC`, [req.user.id, req.user.role]);
   res.json(q.rows);

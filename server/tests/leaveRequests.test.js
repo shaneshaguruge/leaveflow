@@ -123,6 +123,16 @@ describe('GET /api/leave-requests', () => {
     const own = await request(app).get('/api/leave-requests').set('Authorization', `Bearer ${await loginAs(ISHARA)}`);
     expect(own.body.map((r) => r.employee_name)).toEqual(['Ishara Fernando']); // still only her own
   });
+
+  test('each request carries who decided it (decided_by_name), null while pending', async () => {
+    const decided = await apply(await loginAs(ISHARA), { start_date: '2026-06-10', end_date: '2026-06-11' });
+    await apply(await loginAs(ISHARA), { start_date: '2026-06-15', end_date: '2026-06-15' });
+    expect((await act(await loginAs(RUWAN), decided.body.id, 'reject')).status).toBe(200);
+    const hr = await request(app).get('/api/leave-requests').set('Authorization', `Bearer ${await loginAs(DILINI)}`);
+    const byId = Object.fromEntries(hr.body.map((r) => [r.id, r]));
+    expect(byId[decided.body.id].decided_by_name).toBe('Ruwan Jayasuriya');
+    expect(hr.body.filter((r) => r.status === 'PENDING').map((r) => r.decided_by_name)).toEqual([null]);
+  });
 });
 
 describe('PATCH /api/leave-requests/:id', () => {
