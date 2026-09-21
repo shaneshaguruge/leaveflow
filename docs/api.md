@@ -45,6 +45,7 @@ Any other 4xx without an app-specific code uses its HTTP status name in the same
 | GET | `/balances` | own balances | 200 | 401 | US-3 |
 | GET | `/team/requests` | MANAGER, HR_ADMIN | 200 | 401, 403 | US-4 |
 | GET | `/team/requests?from=&to=` | MANAGER, HR_ADMIN | 200 | 400, 401, 403 | US-16 |
+| GET | `/team/requests?history=true` | MANAGER, HR_ADMIN | 200 | 400, 401, 403 | US-4 |
 | GET | `/reports/leave-requests.csv` | HR_ADMIN | 200 (CSV) | 400, 401, 403 | US-12 |
 
 Any other path under `/api` → `404 {"error":{"code":"NOT_FOUND","message":"No such endpoint"}}`.
@@ -125,11 +126,23 @@ The logged-in user, current calendar year; one entry per leave type, even if not
 - `remaining_days` = `annual_allocation − used_days − pending_days`. Computed, not stored.
 
 ### GET /team/requests
-PENDING requests only, with the employee's name. MANAGER → people whose `manager_id` is them; HR_ADMIN → everyone's.
-EMPLOYEE → `403 FORBIDDEN` "Your role cannot do this".
+PENDING requests only, **newest first**, with the employee's name. MANAGER → people whose `manager_id` is them;
+HR_ADMIN → everyone's. EMPLOYEE → `403 FORBIDDEN` "Your role cannot do this". Each row also has:
+- `days` — working days (weekends and public holidays excluded), what approving will deduct;
+- `remaining_days` — the requester's balance for that type and year now (allocation − used);
+- `remaining_after` — `remaining_days − days`, shown on the card as "Annual balance 10 → 7 after" (negative = not enough).
 ```json
 200 [{"id":5,"user_id":2,"leave_type_id":1,"start_date":"2026-10-05","end_date":"2026-10-07","reason":"Family visit to Kandy",
-      "status":"PENDING","decided_by":null,"decided_at":null,"created_at":"2026-09-21T07:39:42.535Z","employee_name":"Ishara Fernando"}]
+      "status":"PENDING","decided_by":null,"decided_at":null,"created_at":"2026-09-21T07:39:42.535Z","employee_name":"Ishara Fernando",
+      "remaining_days":13,"days":3,"remaining_after":10}]
+```
+
+### GET /team/requests?history=true — decided requests
+The same team scope, but **APPROVED and REJECTED** requests, most recently decided first, with `decided_by_name` and
+`days`. Linked from the Approvals screen ("History: approved & rejected requests ›"). Any other value → `400 VALIDATION_ERROR`.
+```json
+200 [{"id":1,"user_id":2,"leave_type_id":1,"start_date":"2026-03-02","end_date":"2026-03-03","status":"APPROVED",
+      "decided_by":1,"decided_by_name":"Ruwan Jayasuriya","employee_name":"Ishara Fernando","days":1,…}]
 ```
 
 ### GET /team/requests?from=YYYY-MM-DD&to=YYYY-MM-DD — who else is off (US-16)
