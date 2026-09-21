@@ -17,7 +17,7 @@ Every project document, by Field Guide phase. **Plan** = written but not carried
 | Doc | What it is |
 |---|---|
 | [`requirements.md`](requirements.md) | SRS: stakeholders, US-1…US-16, acceptance criteria, MoSCoW, open questions Q1–Q5, NFRs, wireframe index |
-| [`wireframes/`](wireframes/) | Paper wireframes (photos): [login](wireframes/login.jpeg), [apply for leave](wireframes/apply-for-leave.jpeg), [manager approvals](wireframes/manager-approvals.jpeg), [my requests](wireframes/my-requests.jpeg), [HR all requests](wireframes/hr-all-requests.jpeg) |
+| [`wireframes/`](wireframes/) | Paper wireframes (photos): [login](wireframes/login.jpeg), [apply for leave](wireframes/apply-for-leave.jpeg), [manager approvals](wireframes/manager-approvals.jpeg), [my requests](wireframes/my-requests.jpeg), [HR all requests](wireframes/hr-all-requests.jpeg); Capstone (SVG + PNG, can be redrawn on paper): [apply with a half day](wireframes/apply-half-day.svg), [HR holidays](wireframes/hr-holidays.svg) |
 
 ## Phase 2 — Design
 
