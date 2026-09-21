@@ -4,11 +4,13 @@ import Login from './components/Login';
 import MyLeave from './components/MyLeave';
 import Approvals from './components/Approvals';
 import AllRequests from './components/AllRequests';
+import Holidays from './components/Holidays';
 
 const PAGES = [
   { key: 'leave', label: 'My leave', roles: ['EMPLOYEE', 'MANAGER', 'HR_ADMIN'] },
   { key: 'approvals', label: 'Approvals', roles: ['MANAGER', 'HR_ADMIN'] },
   { key: 'all', label: 'All requests', roles: ['HR_ADMIN'] },
+  { key: 'holidays', label: 'Holidays', roles: ['HR_ADMIN'] },
 ];
 
 export default function App() {
@@ -70,6 +72,7 @@ export default function App() {
       <main className="container">
         {current === 'approvals' && <Approvals />}
         {current === 'all' && <AllRequests />}
+        {current === 'holidays' && <Holidays />}
         {current === 'leave' && <MyLeave />}
       </main>
     </>

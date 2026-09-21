@@ -63,7 +63,7 @@ describe('ApplyLeaveForm', () => {
     expect(url).toBe('/api/leave-requests');
     expect(init.method).toBe('POST');
     expect(JSON.parse(init.body)).toEqual({
-      leave_type_id: 1, start_date: '2026-10-05', end_date: '2026-10-07', reason: 'Trip to Kandy',
+      leave_type_id: 1, start_date: '2026-10-05', end_date: '2026-10-07', reason: 'Trip to Kandy', day_part: 'FULL',
     });
   });
 
@@ -97,5 +97,42 @@ describe('ApplyLeaveForm', () => {
     expect(screen.getByLabelText(/reason/i)).toHaveValue('');
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  test('Morning makes a single day 0.5 and is posted as day_part AM (Capstone US-17)', async () => {
+    const user = userEvent.setup();
+    const fetchMock = mockFetch(201, { id: 9, status: 'PENDING' });
+    render(<ApplyLeaveForm balances={balances} onCreated={() => {}} />);
+    await user.type(screen.getByLabelText(/start date/i), '2026-10-09');
+    await user.type(screen.getByLabelText(/end date/i), '2026-10-09');
+    expect(screen.getByRole('radio', { name: 'Full day' })).toBeChecked();
+    await user.click(screen.getByRole('radio', { name: 'Morning' }));
+    expect(screen.getByTestId('balance-line')).toHaveTextContent('= 0.5 working days · 9.5 remaining');
+    await user.click(screen.getByRole('button', { name: /submit request/i }));
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ start_date: '2026-10-09', day_part: 'AM' });
+  });
+
+  test('Afternoon on the last day of a range: Mon–Wed + Afternoon = 2.5', async () => {
+    const user = userEvent.setup();
+    render(<ApplyLeaveForm balances={balances} onCreated={() => {}} />);
+    await user.type(screen.getByLabelText(/start date/i), '2026-10-05');
+    await user.type(screen.getByLabelText(/end date/i), '2026-10-07');
+    expect(screen.getByRole('group', { name: 'Day (last day, 2026-10-07)' })).toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: 'Afternoon' }));
+    expect(screen.getByTestId('balance-line')).toHaveTextContent('= 2.5 working days · 7.5 remaining');
+  });
+
+  test('Sick leave has no Morning/Afternoon choice and is always posted as a full day (AC-17.6)', async () => {
+    const user = userEvent.setup();
+    const fetchMock = mockFetch(201, { id: 10, status: 'PENDING' });
+    render(<ApplyLeaveForm balances={balances} onCreated={() => {}} />);
+    await user.click(screen.getByRole('radio', { name: 'Morning' }));
+    await user.selectOptions(screen.getByLabelText(/leave type/i), 'Sick');
+    expect(screen.queryByRole('radio', { name: 'Morning' })).not.toBeInTheDocument();
+    await user.type(screen.getByLabelText(/start date/i), '2026-10-09');
+    await user.type(screen.getByLabelText(/end date/i), '2026-10-09');
+    expect(screen.getByTestId('balance-line')).toHaveTextContent('= 1 working day');
+    await user.click(screen.getByRole('button', { name: /submit request/i }));
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ leave_type_id: 3, day_part: 'FULL' });
   });
 });

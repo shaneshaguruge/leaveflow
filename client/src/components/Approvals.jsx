@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
-import { plural, workingDays } from '../leaveDays';
+import { dateRangeLabel, plural, workingDays } from '../leaveDays';
 import { typeName } from '../leaveTypes';
 import StatusBadge from './StatusBadge';
 import TeamWeekPanel from './TeamWeekPanel';
@@ -45,9 +45,12 @@ export default function Approvals() {
           return (
             <li key={r.id} className="card item" data-testid={`approval-${r.id}`}>
               <div className="item-main">
-                <div className="item-title">{r.employee_name}</div>
-                <div>{type} · {plural(r.days ?? workingDays(r.start_date, r.end_date), 'day')}</div>
-                <div className="muted">{r.start_date} → {r.end_date}{r.reason ? ` · ${r.reason}` : ''}</div>
+                <div className="item-title">
+                  {r.employee_name}
+                  {r.day_part && r.day_part !== 'FULL' && <span className="badge badge-half">{r.day_part}</span>}
+                </div>
+                <div>{type} · {plural(r.days ?? workingDays(r.start_date, r.end_date, r.day_part), 'day')}</div>
+                <div className="muted" data-testid={`dates-${r.id}`}>{dateRangeLabel(r)}{r.reason ? ` · ${r.reason}` : ''}</div>
                 {r.remaining_after !== undefined && (
                   <div className={r.remaining_after < 0 ? 'hint-bad' : 'hint'} data-testid={`balance-after-${r.id}`}>
                     {type} balance {r.remaining_days} → {r.remaining_after} after
@@ -100,7 +103,7 @@ function History({ version }) {
             <div className="item-main">
               <div className="item-title">{r.employee_name}</div>
               <div>{typeName(null, r.leave_type_id)} · {plural(r.days, 'day')}</div>
-              <div className="muted">{r.start_date} → {r.end_date} · decided by {r.decided_by_name || '—'}</div>
+              <div className="muted">{dateRangeLabel(r)} · decided by {r.decided_by_name || '—'}</div>
             </div>
             <div className="item-side"><StatusBadge status={r.status} /></div>
           </li>

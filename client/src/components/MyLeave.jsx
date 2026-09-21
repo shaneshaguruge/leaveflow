@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api';
-import { plural, workingDays } from '../leaveDays';
+import { dateRangeLabel, plural, workingDays } from '../leaveDays';
 import { typeName } from '../leaveTypes';
 import ApplyLeaveForm from './ApplyLeaveForm';
 import StatusBadge from './StatusBadge';
@@ -74,9 +74,9 @@ export default function MyLeave() {
             <li key={r.id} className="card item" data-testid={`request-${r.id}`}>
               <div className="item-main">
                 <div className="item-title">
-                  {typeName(balances, r.leave_type_id)} · {plural(workingDays(r.start_date, r.end_date), 'day')}
+                  {typeName(balances, r.leave_type_id)} · {plural(r.days ?? workingDays(r.start_date, r.end_date, r.day_part), 'day')}
                 </div>
-                <div className="muted">{r.start_date} → {r.end_date}{r.reason ? ` · ${r.reason}` : ''}</div>
+                <div className="muted" data-testid={`dates-${r.id}`}>{dateRangeLabel(r)}{r.reason ? ` · ${r.reason}` : ''}</div>
               </div>
               <div className="item-side">
                 <StatusBadge status={r.status} />

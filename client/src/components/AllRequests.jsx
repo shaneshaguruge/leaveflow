@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api, download } from '../api';
-import { plural, workingDays } from '../leaveDays';
+import { dateRangeLabel, plural, workingDays } from '../leaveDays';
 import { DEFAULT_LEAVE_TYPES, typeName } from '../leaveTypes';
 import StatusBadge from './StatusBadge';
 
@@ -79,8 +79,8 @@ export default function AllRequests() {
           <li key={r.id} className="card item" data-testid={`request-${r.id}`}>
             <div className="item-main">
               <div className="item-title">{r.employee_name} <span className="muted">#{r.id}</span></div>
-              <div>{typeName(null, r.leave_type_id)} · {plural(r.days ?? workingDays(r.start_date, r.end_date), 'day')}</div>
-              <div className="muted">{r.start_date} → {r.end_date}{r.reason ? ` · ${r.reason}` : ''}</div>
+              <div>{typeName(null, r.leave_type_id)} · {plural(r.days ?? workingDays(r.start_date, r.end_date, r.day_part), 'day')}</div>
+              <div className="muted">{dateRangeLabel(r)}{r.reason ? ` · ${r.reason}` : ''}</div>
               <div className="muted" data-testid={`decided-by-${r.id}`}>Decided by: {r.decided_by_name || '—'}</div>
             </div>
             <div className="item-side"><StatusBadge status={r.status} /></div>
