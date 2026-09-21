@@ -40,8 +40,8 @@ describe('GET /api/reports/leave-requests.csv', () => {
     expect(res.headers['content-disposition']).toBe('attachment; filename="leave-requests-2026.csv"');
     expect(res.body.startsWith('﻿')).toBe(true); // Excel reads the names as UTF-8
     const [header, row] = lines(res.body);
-    expect(header).toBe('Request ID,Employee,Type,Start date,End date,Working days,Status,Decided by,Decided at,Reason');
-    expect(row).toMatch(new RegExp(`^${vesak},Ishara Fernando,Annual,2026-04-29,2026-05-04,3,APPROVED,Ruwan Jayasuriya,2026-\\d\\d-\\d\\dT[^,]+,"Vesak trip, Kandy"$`));
+    expect(header).toBe('Request ID,Employee,Type,Start date,End date,Day part,Working days,Status,Decided by,Decided at,Reason');
+    expect(row).toMatch(new RegExp(`^${vesak},Ishara Fernando,Annual,2026-04-29,2026-05-04,FULL,3,APPROVED,Ruwan Jayasuriya,2026-\\d\\d-\\d\\dT[^,]+,"Vesak trip, Kandy"$`));
   });
 
   test('status, type and year filters give the same rows as the screen', async () => {
