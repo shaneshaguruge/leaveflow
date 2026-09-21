@@ -52,4 +52,35 @@ describe('AllRequests (HR)', () => {
     expect(screen.getByTestId('request-4')).toBeInTheDocument();
     expect(screen.queryByTestId('request-2')).not.toBeInTheDocument();
   });
+
+  test('Export CSV downloads the file for the filters on screen (US-12)', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn(async (url) => (url === '/api/leave-requests'
+      ? { ok: true, status: 200, json: async () => rows }
+      : { ok: true, status: 200, blob: async () => new Blob(['Request ID\r\n'], { type: 'text/csv' }) }));
+    vi.stubGlobal('fetch', fetchMock);
+    const createObjectURL = vi.fn(() => 'blob:csv');
+    vi.stubGlobal('URL', Object.assign(Object.create(URL), { createObjectURL, revokeObjectURL: vi.fn() }));
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    localStorage.setItem('token', 't');
+
+    render(<AllRequests />);
+    await screen.findByTestId('request-2');
+    await user.selectOptions(screen.getByLabelText('Year'), '2026');
+    await user.selectOptions(screen.getByLabelText('Status'), 'APPROVED');
+    await user.selectOptions(screen.getByLabelText('Type'), 'Sick');
+    await user.click(screen.getByRole('button', { name: 'Export CSV' }));
+
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/reports/leave-requests.csv?year=2026&status=APPROVED&type=3',
+      { headers: { Authorization: 'Bearer t' } });
+    expect(createObjectURL).toHaveBeenCalled();
+    expect(click).toHaveBeenCalledTimes(1);
+    click.mockRestore();
+  });
+
+  test('uses the server working-day count (holidays excluded) when the API sends one', async () => {
+    mockFetch([{ ...rows[0], id: 9, start_date: '2026-04-29', end_date: '2026-05-04', days: 3 }]);
+    render(<AllRequests />);
+    expect(await screen.findByTestId('request-9')).toHaveTextContent('Sick · 3 days');
+  });
 });

@@ -23,3 +23,23 @@ export async function api(path, options = {}) {
   }
   return data;
 }
+
+// Downloads a file from an authenticated endpoint (the browser can't add the Bearer header to a plain link).
+export async function download(path, filename) {
+  const token = localStorage.getItem('token');
+  const res = await fetch('/api' + path, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    const err = new Error(data?.error?.message || `Request failed (${res.status})`);
+    err.status = res.status;
+    throw err;
+  }
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}

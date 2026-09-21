@@ -45,6 +45,7 @@ Any other 4xx without an app-specific code uses its HTTP status name in the same
 | GET | `/balances` | own balances | 200 | 401 | US-3 |
 | GET | `/team/requests` | MANAGER, HR_ADMIN | 200 | 401, 403 | US-4 |
 | GET | `/team/requests?from=&to=` | MANAGER, HR_ADMIN | 200 | 400, 401, 403 | US-16 |
+| GET | `/reports/leave-requests.csv` | HR_ADMIN | 200 (CSV) | 400, 401, 403 | US-12 |
 
 Any other path under `/api` → `404 {"error":{"code":"NOT_FOUND","message":"No such endpoint"}}`.
 
@@ -82,7 +83,8 @@ reports), US-14–15. There is **no DELETE** endpoint: cancelling is `PATCH {"ac
 EMPLOYEE / MANAGER → only their own requests; HR_ADMIN → every request. Newest first. Each item is a full row plus
 the requester's name:
 `id, user_id, employee_name, leave_type_id, start_date, end_date, reason, status, decided_by, decided_by_name, decided_at, created_at`
-(`decided_by_name` is `null` while PENDING). The HR page filters by status and type in the browser.
+(`decided_by_name` is `null` while PENDING), plus `days`: working days with weekends **and** public holidays excluded
+(the same count the balance uses). The HR page filters by year, status and type in the browser.
 (dates `YYYY-MM-DD`; timestamps ISO 8601 UTC).
 
 ### POST /leave-requests
@@ -148,6 +150,21 @@ shows the result in a "Team that week" panel; an empty array is shown as "No one
 400 {"error":{"code":"VALIDATION_ERROR","message":"to: must be YYYY-MM-DD"}}
 ```
 Both values are bind parameters (`$1`, `$2`), never pasted into the SQL.
+
+### GET /reports/leave-requests.csv — Export CSV (US-12)
+HR_ADMIN only (EMPLOYEE, MANAGER → `403 FORBIDDEN`). The HR **All requests** list as a file for finance, filtered the
+same way as the screen. Optional query parameters: `year` (`YYYY`, by start date), `status` (`PENDING`, `APPROVED`,
+`REJECTED`, `CANCELLED`), `type` (leave type id). A bad value → `400 VALIDATION_ERROR` (JSON, as everywhere).
+```
+200  Content-Type: text/csv; charset=utf-8
+     Content-Disposition: attachment; filename="leave-requests-2026.csv"
+Request ID,Employee,Type,Start date,End date,Working days,Status,Decided by,Decided at,Reason
+1,Ishara Fernando,Annual,2026-04-29,2026-05-04,3,APPROVED,Ruwan Jayasuriya,2026-09-21T12:00:00.000Z,"Vesak trip, Kandy"
+```
+- UTF-8 with a byte-order mark and CRLF line ends, so Excel opens it directly; fields with `,` `"` or line breaks are quoted.
+- **CSV injection:** a cell starting with `=` `+` `-` `@` is prefixed with `'` so Excel shows it as text, never runs it.
+- Newest first. `Working days` excludes weekends and public holidays. The per-employee year-end totals (US-11) are a
+  separate story, not built.
 
 ---
 

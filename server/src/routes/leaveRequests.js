@@ -16,7 +16,8 @@ router.get('/', asyncHandler(async (req, res) => {
      LEFT JOIN users d ON d.id = lr.decided_by
      WHERE lr.user_id = $1 OR $2 = 'HR_ADMIN'
      ORDER BY lr.created_at DESC`, [req.user.id, req.user.role]);
-  res.json(q.rows);
+  // days: working days with weekends AND public holidays excluded — the number the balance uses.
+  res.json(q.rows.map((r) => ({ ...r, days: leaveDays(r.start_date, r.end_date, HOLIDAYS) })));
 }));
 
 router.post('/', validate([

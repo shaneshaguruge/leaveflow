@@ -156,3 +156,4 @@ nav { display: flex; gap: 4px; max-width: 728px; margin: 8px auto 0; overflow-x:
 
 /* HR All requests: Status + Type filters side by side, wrapping on phones */
 .filters { display: flex; flex-wrap: wrap; gap: 0 16px; }
+.filters .export { margin: 0 0 12px auto; }
