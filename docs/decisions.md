@@ -15,7 +15,7 @@ queries) are in [`design.md`](design.md) §2 and are not repeated here. Dates an
 | 7 Branch protection with 0 required approvals | 2026-09-21 | GitHub API, before PR #27 | Accepted |
 | 8 Node 24 instead of Node 20 | 2026-09-21 | environment (Phase 0) | Accepted |
 | 9 Proxy trust from the `TRUST_PROXY` env var | 2026-09-21 | PR #20 | Accepted |
-| 10 Half days as `day_part` (FULL/AM/PM), holidays as a table keyed by date | 2026-09-22 | Capstone design PR | Accepted |
+| 10 Half days as `day_part` (FULL/AM/PM), holidays as a table keyed by date | 2026-09-22 | PR #53 (built in #55–#58) | Accepted |
 
 ## ADR-1 PostgreSQL instead of SQLite
 
@@ -97,4 +97,7 @@ queries) are in [`design.md`](design.md) §2 and are not repeated here. Dates an
 - **Why not a `half_day` boolean:** it can't say which half (AM + PM on one date would clash; managers can't see
   AM/PM) and is ambiguous on multi-day requests. **Why the date as key:** a date is a holiday or not; a surrogate id or
   `(date, name)` could count one date twice.
+- **Built:** day math #55, migration 006 #56, API #57, UI #58.
+- **Known consequence:** a request's displayed days are recomputed from the current holiday list, so they can differ
+  from the charged days after a holiday is deleted (#65); the retro records "store the charged days" as the lesson.
 - **Details:** [`capstone/design.md`](capstone/design.md).
