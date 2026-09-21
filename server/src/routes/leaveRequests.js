@@ -76,7 +76,7 @@ router.patch('/:id', validate([
   if (action !== 'cancel' && !['MANAGER', 'HR_ADMIN'].includes(req.user.role)) {
     throw httpError(403, 'FORBIDDEN', 'Managers only');
   }
-  if (action === 'approve' && req.user.role === 'MANAGER' && manager_id !== req.user.id) {
+  if (action !== 'cancel' && req.user.role === 'MANAGER' && manager_id !== req.user.id) {
     throw httpError(403, 'FORBIDDEN', 'Not your report');
   }
 
