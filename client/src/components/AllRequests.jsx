@@ -34,7 +34,7 @@ export default function AllRequests() {
         {shown.map((r) => (
           <li key={r.id} className="card item">
             <div className="item-main">
-              <div className="item-title">#{r.id} · Employee #{r.user_id}</div>
+              <div className="item-title">{r.employee_name} <span className="muted">#{r.id}</span></div>
               <div>{typeName(null, r.leave_type_id)} · {plural(workingDays(r.start_date, r.end_date), 'day')}</div>
               <div className="muted">{r.start_date} → {r.end_date}{r.reason ? ` · ${r.reason}` : ''}</div>
             </div>
