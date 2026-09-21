@@ -86,6 +86,19 @@ describe('POST /api/leave-requests', () => {
     expect(res.body.error.code).toBe('OVERLAPPING_REQUEST');
   });
 
+  test('BUG-002 regression: a request ending ON an existing request\'s start date overlaps (409)', async () => {
+    const token = await loginAs(ISHARA);
+    expect((await apply(token, { start_date: '2026-10-05', end_date: '2026-10-07' })).status).toBe(201);
+    const endsOnStart = await apply(token, { start_date: '2026-10-01', end_date: '2026-10-05' });
+    expect(endsOnStart.status).toBe(409);
+    expect(endsOnStart.body.error.code).toBe('OVERLAPPING_REQUEST');
+    const sameSingleDay = await apply(token, { start_date: '2026-10-05', end_date: '2026-10-05' });
+    expect(sameSingleDay.status).toBe(409);
+    // the day before and the day after are still free
+    expect((await apply(token, { start_date: '2026-10-02', end_date: '2026-10-02' })).status).toBe(201);
+    expect((await apply(token, { start_date: '2026-10-08', end_date: '2026-10-08' })).status).toBe(201);
+  });
+
   test('refuses a request larger than the remaining balance with 409', async () => {
     const token = await loginAs(ISHARA);
     // Mon 6 Jul - Fri 24 Jul 2026: 15 working days, no holidays; the Annual allocation is 14.
