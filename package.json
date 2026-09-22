@@ -1,8 +1,10 @@
 {
   "name": "leaveflow",
   "private": true,
-  "description": "Repo-root package for the end-to-end suite (Playwright boots server/ and client/).",
+  "description": "Repo root: one-command local dev (npm install && npm run dev) and the end-to-end suite.",
   "scripts": {
+    "postinstall": "npm --prefix server install && npm --prefix client install",
+    "dev": "node scripts/dev.js",
     "test:e2e": "playwright test"
   },
   "devDependencies": {

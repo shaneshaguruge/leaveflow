@@ -20,7 +20,13 @@ docker compose exec api npm run seed
 
 ## Start without Docker (backup)
 
-Three Git Bash windows:
+One command from the repo root (the first time, `npm install` also installs `server/` and `client/`):
+
+```bash
+cd /e/leaveflow && npm install && npm run dev
+```
+
+Open **http://localhost:5173**. Ctrl+C stops everything. Or, in three Git Bash windows:
 
 ```bash
 # window 1: the database (leave it open)
@@ -68,7 +74,7 @@ db:stop`). Data is kept in `server/.pgdata`. To start again, repeat the three wi
 
 | Problem | Fix |
 |---|---|
-| `failed to connect to the docker API` / Docker Desktop won't start | Open Docker Desktop and wait for **Engine running**. If it shows an error about `dockerInference … cannot be accessed by the system`, quit Docker Desktop completely, restart Windows, and open it again. For the demo, use **Start without Docker** above |
+| `failed to connect to the docker API` / Docker Desktop won't start | Open Docker Desktop and wait for **Engine running**. If it shows an error about `dockerInference … cannot be accessed by the system`: in Docker Desktop **Settings → AI**, untick **Enable Docker Model Runner** and **Docker AI (Ask Gordon)**, then **Apply & restart** (or run `docker desktop disable model-runner`). That fixed it on 2026-09-22. For the demo, use **Start without Docker** above |
 | Port 8080 is busy | An old stack is still running: `docker compose down`, then start again. To see what holds the port: `netstat -ano \| grep :8080` |
 | Login says "Wrong email or password" | The database has no seed data yet: `docker compose exec api npm run migrate` and `docker compose exec api npm run seed` (without Docker: `cd /e/leaveflow/server && npm run migrate`) |
 | The page shows old screens (no Morning/Afternoon, no Holidays tab) | Rebuild: `git pull && docker compose up -d --build`, then press **Ctrl+Shift+R** in the browser |

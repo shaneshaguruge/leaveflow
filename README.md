@@ -20,7 +20,13 @@ Open **http://localhost:8080**. Stop with `docker compose down` (keeps the data 
 
 ## Run it without Docker
 
-Needs Node 24. Two terminals for the API, one for the client.
+Needs Node 24. One command from the repo root:
+
+```bash
+npm install && npm run dev   # database, migrations, API on :4000 and web on :5173; Ctrl+C stops all
+```
+
+Or step by step: two terminals for the API, one for the client.
 
 ```bash
 cd server
