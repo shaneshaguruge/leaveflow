@@ -42,7 +42,7 @@ Row check: 72 + 6 + 17 = 95; every row's three columns add up to its total.
 - [x] Every story MoSCoW-tagged, with a written Won't-have list including payroll
 - [x] Five clarifying questions drafted, including the approval-flow contradiction
 - [x] NFR-1…NFR-5 recorded, including the honest 60-user scale note
-- [x] A paper wireframe of the Apply-for-leave screen exists (photo saved) — `docs/wireframes/apply-for-leave.jpeg` (paper, photographed), plus login, manager approvals, my requests and HR all requests in `docs/wireframes/`; indexed in `requirements.md` §7
+- [x] A paper wireframe of the Apply-for-leave screen exists (photo saved) — `docs/wireframes/apply-for-leave.jpeg` (paper, photographed), plus login, manager approvals, my requests and HR all requests in `docs/wireframes/`, and the Capstone ones (`apply-half-day.jpeg`, `hr-holidays.jpeg`); indexed in `requirements.md` §7
 
 ## Phase 2 — Design & Modeling (7)
 - [x] Paper ERD drawn and reconciled with the canonical four-table schema (PKs and FKs labeled) — `docs/ERD.jpeg`, hand-drawn
