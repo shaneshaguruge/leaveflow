@@ -21,10 +21,10 @@ real output. Where something could not be verified, the row says so.
 
 | Check | Command | Result |
 |---|---|---|
-| Count query calls in routes | `grep -rn "query(" server/src/routes/ \| wc -l` | `23` (re-run 2026-09-21 after PR #49; +1 in `team.js` for US-16 (#32), +1 in `reports.js` for the CSV export (#41)) |
-| Count query calls in all server code | `grep -rn "query(" server/src/ \| wc -l` | `27` (23 in routes + 4 in `db/migrate.js`; re-run 2026-09-21 after PR #49) |
-| Any `${…}` inside a SQL string passed to `query(` (multi-line aware) | Node script: regex over every `query(<literal>` in `server/src/{routes,db,middleware}/*.js`, flag `${` inside the literal | `query() calls with literal SQL: 26 with ${} interpolation: 0` (re-run 2026-09-21 after PR #49) — 26 of the 27 calls; the 27th is the non-literal one in `db/migrate.js` (next rows) |
-| Any `${…}` in routes at all | `grep -rnE '\$\{[^}]*\}' server/src/routes/` | 4 hits, none in SQL: `leaveRequests.js:44` and `:58` (error messages), `reports.js:18` (error message) and `reports.js:41` (download file name; `year` is validated as 4 digits first) |
+| Count query calls in routes | `grep -rn "query(" server/src/routes/ \| wc -l` | `32` (re-run 2026-09-22 after the Capstone: `holidays.js` routes and the half-day checks added calls) |
+| Count query calls in all server code | `grep -rn "query(" server/src/ \| wc -l` | `37` (32 in routes + 4 in `db/migrate.js` + 1 in `lib/holidays.js`; re-run 2026-09-22) |
+| Any `${…}` inside a SQL string passed to `query(` (multi-line aware) | Node script: regex over every `query(<literal>` in `server/src/{routes,db,middleware,lib}/*.js`, flag `${` inside the literal | `query() calls with literal SQL: 36 with ${} interpolation: 0` (re-run 2026-09-22) — 36 of the 37 calls; the 37th is the non-literal one in `db/migrate.js` (next rows) |
+| Any `${…}` in routes at all | `grep -rnE '\$\{[^}]*\}' server/src/routes/` | 7 hits, none in SQL: error messages in `holidays.js:44`, `:75`, `leaveRequests.js:44`, `:63`, `:77`, `reports.js:19`, and the download file name in `reports.js:42` (`year` is validated as 4 digits first) |
 | String concatenation into `query(` | `grep -rnE "query\([^)]*\+ " server/src/` | no output |
 | Non-literal SQL | `grep -rnE "query\(\s*[^\`'\" ]" server/src/ server/scripts/` | 1 hit: `db/migrate.js:13` runs the `.sql` migration files from the repo — no user input |
 

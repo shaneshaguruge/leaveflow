@@ -78,6 +78,12 @@ staging or production environment.
 - #66 (19:33) Demo script (rehearsed twice), unrehearsed question answered live with a regression test, retro.
 - Stretch ideas parked as issues #60–#65.
 
+## After the Capstone (2026-09-22)
+
+- #68 `docs/HOW-TO-RUN.md`: start and stop with or without Docker, quick fixes, a 5-minute demo.
+- Leftovers: `npm install && npm run dev` from the repo root (`scripts/dev.js`); TC-01…TC-05 run (5/5 pass); stale docs
+  fixed (security-audit counts, test cases, design and requirements pointers, Docker fix); CI pinned to `ubuntu-24.04`.
+
 ## Records
 
 - #18 (07:14), #24 (07:45), #25 (08:10), #29 (10:15), #44 (17:16), #45 (17:49), #51 (18:37) — `docs/PROGRESS.md` and

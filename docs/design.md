@@ -119,6 +119,9 @@ Primary key: the combination (`user_id`, `leave_type_id`, `year`) — one row pe
 
 ---
 
+> **Since the Capstone (2026-09-22):** `leave_requests` has a `day_part` column (FULL/AM/PM) and there is a fifth
+> table, `public_holidays`. Design, ERD and migration: [`capstone/design.md`](capstone/design.md); ADR-10.
+
 ## 4. Leave request state machine
 
 ```

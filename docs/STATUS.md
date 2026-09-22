@@ -1,7 +1,7 @@
 # LeaveFlow — Status
 
 **Last updated:** 2026-09-21 · **Stopped at:** paper wireframes committed (PR #33) and the five wireframe gaps closed (PRs #39–#43); `main` = `11ee499`, CI and Release green. Not deployed anywhere (no staging, no prod).
-Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **71 done · 7 done differently · 17 not done**.
+Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **72 done · 6 done differently · 17 not done**.
 **How reviewer items are ticked:** there is no human reviewer on this project; items that need a review are ticked when the work is done — no human reviewer; self-reviewed.
 
 | Phase | Done | Done differently | Not done | Total |
@@ -10,7 +10,7 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 | 1 Requirements | 7 | 0 | 0 | 7 |
 | 2 Design & Modeling | 6 | 1 | 0 | 7 |
 | 3 Build v0 | 7 | 0 | 0 | 7 |
-| 4 Git & Collaboration | 6 | 1 | 0 | 7 |
+| 4 Git & Collaboration | 7 | 0 | 0 | 7 |
 | 5 The 3-Tier Build | 8 | 0 | 0 | 8 |
 | 6 Testing & Quality | 7 | 0 | 0 | 7 |
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
@@ -18,7 +18,7 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
 | Capstone (rubric 9 + checklist 8) | 13 | 1 | 3 | 17 |
-| **Total** | **71** | **7** | **17** | **95** |
+| **Total** | **72** | **6** | **17** | **95** |
 
 ## Completed
 - Phase 0: Git 2.53.0 configured (`shaneshaguruge` / `shanesha@arozentech.com`, `main`, `autocrlf=input`); Node v24.14.0; npm 11.19.1; VS Code + 4 extensions; `gh` logged in.
@@ -71,6 +71,15 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
   - Demo rehearsed twice, unrehearsed question answered live, retro (#66). Jest 110/110, Vitest 35/35, Playwright 3/3.
   - Stretch parked: #60–#65. Capstone reviewer items ticked with "no human reviewer; self-reviewed"; the demo is "done differently" (no live audience).
 
+- Leftovers (2026-09-22):
+  - TC-01…TC-05 run by HTTP client on a fresh database: 5/5 pass.
+  - `npm install && npm run dev` works from the repo root on a fresh clone (Phase 4 item now `[x]`).
+  - Docker Desktop works again after the update, with Docker AI and Model Runner turned off.
+  - Full local check: Jest 110/110, Vitest 35/35, Playwright 3/3, lint and build clean, `npm audit` 0 everywhere.
+  - The half-day → approve → −0.5 → holiday → CSV flow checked through http://localhost:8080 (test data removed).
+  - Stale docs fixed: security-audit counts, test cases, design and requirements pointers.
+  - CI pinned to `ubuntu-24.04`.
+
 ## Skipped or blocked, and why
 - Phase 0 `ssh -T git@github.com`: not reached — key generated, not added to GitHub; HTTPS via `gh` used instead.
 - Phase 6 manual execution of TC-01…TC-05: not reached — written, marked "not run yet".
@@ -84,19 +93,17 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 ## Still to do, and who
 - Phase 0 — [me] add the SSH key to GitHub (optional).
 - Phase 2 — [me] add the final `201 Created` arrow (API → Browser) to the paper sequence diagram, re-photograph it and replace `docs/diagrams/sequence-diagram.jpeg` via a PR.
-- Phase 4 — [me] optional: a README and a root `dev` script so `npm install && npm run dev` works from the repo root.
 - Phase 4–5 — [me] ask Nadeesha to confirm Q1 and R5 (HR approving own leave).
-- Phase 6 — [me] run TC-01…TC-05 by hand.
 - Phase 7 — [me] log in once in the browser at http://localhost:8080 to complete the new-machine item.
 - Phase 9 — [me] Render/AWS accounts with a $10 budget alarm first, then `deploy-render.md` / `deploy-aws.md`; execute the teardown checklist.
 - Phase 10 — [me] CloudWatch 5xx alarm, restore drill, ship US-16 to staging then prod (after Phase 9) and reply to Nadeesha with the live link; [me] ask Nadeesha whether overlapping leave should also *warn* or *block*; [me] staged incident.
 - Capstone — [me] once Phase 9 exists: run migration 006 on staging, demo there, then promote to production.
 
 ## Known issues
-- Docker Desktop crashed on start: `starting services: initializing Inference manager: listening on unix://<HOME>\AppData\Local\Docker\run\dockerInference: remove …: The file cannot be accessed by the system.` Fixed by the user on 2026-09-21; a leftover folder `%LOCALAPPDATA%\Docker\run.stale-20260921` with two stale socket files remains.
+- Docker Desktop crashed on start (21 and 22 Sep): `listening on unix://<HOME>\AppData\Local\Docker\run\dockerInference: remove …: The file cannot be accessed by the system.` Working since 2026-09-22 after the Docker Desktop update (29.8.0) with **Docker AI and Model Runner turned off** (`docker desktop disable model-runner`; `EnableDockerAI`/`EnableInference` false in `settings-store.json`). The update cleared Docker's old volumes, so the Compose database was re-seeded. A leftover folder `%LOCALAPPDATA%\Docker\run.stale-20260921` remains.
 - Running `npm ci` in `server/` while `npm run db` is running fails (EPERM on the Postgres binaries in `node_modules/@embedded-postgres`); stop the DB first or use `npm install`.
 - `public_holidays`: the 25 seeded 2026 dates are "to confirm against the official gazette" (HR confirms in the Holidays screen); only 2026 is entered.
 - The apply form's live "= N working days" preview skips weekends and the half day but not holidays (it can't read the HR-only holiday list); the server's count is authoritative and every list shows it (#63).
 - For an approved request, the displayed `days` is recomputed from the current holiday list; after HR deletes a holiday it can differ from the days actually charged (#65).
 - HR_ADMIN can approve their own leave (design risk R5) — policy question for Nadeesha.
-- CI annotation: `The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026.`
+- CI and Release are pinned to `ubuntu-24.04` (2026-09-22), so the `ubuntu-latest` move to Ubuntu 26 on 19 October 2026 won't change builds silently; bump it on purpose later.

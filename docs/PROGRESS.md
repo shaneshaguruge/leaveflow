@@ -14,7 +14,7 @@ Proofs for Phases 6, 7, 8 and 10 were re-run on 2026-09-21; the Docker (Phase 7)
 | 1 Requirements | 7 | 0 | 0 | 7 |
 | 2 Design & Modeling | 6 | 1 | 0 | 7 |
 | 3 Build v0 | 7 | 0 | 0 | 7 |
-| 4 Git & Collaboration | 6 | 1 | 0 | 7 |
+| 4 Git & Collaboration | 7 | 0 | 0 | 7 |
 | 5 The 3-Tier Build | 8 | 0 | 0 | 8 |
 | 6 Testing & Quality | 7 | 0 | 0 | 7 |
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
@@ -22,9 +22,9 @@ Proofs for Phases 6, 7, 8 and 10 were re-run on 2026-09-21; the Docker (Phase 7)
 | 9 Cloud Deployment | 0 | 0 | 8 | 8 |
 | 10 Production Operations | 1 | 0 | 6 | 7 |
 | Capstone (rubric 9 + checklist 8) | 13 | 1 | 3 | 17 |
-| **Total** | **71** | **7** | **17** | **95** |
+| **Total** | **72** | **6** | **17** | **95** |
 
-Row check: 71 + 7 + 17 = 95; every row's three columns add up to its total.
+Row check: 72 + 6 + 17 = 95; every row's three columns add up to its total.
 
 ## Phase 0 — Foundations & Setup (7)
 - [x] I can navigate, create files, and use a pipe in the terminal without looking anything up — self-assessed by the developer (2026-09-22); also shown in practice: pipe lab `ls lab0/*.txt | wc -l` → `3`
@@ -64,7 +64,7 @@ Row check: 71 + 7 + 17 = 95; every row's three columns add up to its total.
 
 ## Phase 4 — Git & Collaboration (7)
 - [x] .gitignore excludes node_modules/, *.db, and .env, and none of them appear in the repo on GitHub — GitHub tree scan: 0 of 105 paths match
-- [~] The full LeaveFlow repo is on GitHub and a fresh clone runs with npm install && npm run dev — **per folder, not from the repo root**: re-run 2026-09-21 on a fresh clone of `58cc6ed`: at the root `npm run dev` → `npm error Missing script: "dev"` (the root package only holds Playwright); in `server/` `npm install` + `.env` from `.env.example` + `npm run db` + `npm run migrate` (001–005) + `npm run dev` → `/api/health` 200; in `client/` `npm install` + `npm run dev` → page 200 and login through the Vite proxy 200
+- [x] The full LeaveFlow repo is on GitHub and a fresh clone runs with npm install && npm run dev — from the **repo root** since 2026-09-22 (leftovers PR): `postinstall` installs `server/` and `client/`, and `npm run dev` (`scripts/dev.js`) starts PostgreSQL, applies migrations 001–006 and runs the API and web app. Fresh clone with no `.env`: `npm install` 33 s, then `npm run dev` → database created, migrations applied, `/api/health` 200 and the three logins 200 through http://localhost:5173
 - [x] feat/cancel-leave was merged through a reviewed PR with a What/Why/How-to-test description — PR #11 from `feat/cancel-leave`, merged, description has What / Why / How to test (7 steps, run live) and closed #5; no human reviewer; self-reviewed
 - [x] You responded to every review comment and hardened the cancel guard against non-PENDING requests — guard: one atomic `UPDATE … WHERE status = 'PENDING'`, anything else `409 INVALID_STATE`, non-owner 403; Jest "cancelling an APPROVED request is refused with 409", "cancelling someone else's request is forbidden with 403"; review comments: 0 to answer — no human reviewer; self-reviewed
 - [x] You created, resolved, and committed a real merge conflict with no markers left behind — PR #13
@@ -83,11 +83,11 @@ Row check: 71 + 7 + 17 = 95; every row's three columns add up to its total.
 
 ## Phase 6 — Testing & Quality (7)
 - [x] leaveDays is extracted to server/src/lib/leaveDays.js and the routes call it — `grep -n "require('../lib/leaveDays')" server/src/routes/*.js` → `balances.js:5`, `leaveRequests.js:6`
-- [x] The Jest unit suite passes, including the (fixed) Vesak poya holiday case — `cd server && npx jest --runInBand --json` → 54 passed, 0 failed (2026-09-21, after the wireframe PRs #39–#43; 43 after #32, 32 after #27/#28), incl. "leaveDays excludes Vesak poya from a spanning request"; CI test-api green on `main` @ `11ee499`: https://github.com/shaneshaguruge/leaveflow/actions/runs/35630556232
+- [x] The Jest unit suite passes, including the (fixed) Vesak poya holiday case — `cd server && npx jest --runInBand --json` → 110 passed, 0 failed (2026-09-22, after the Capstone; 54 after #43, 32 after #27/#28), incl. "leaveDays excludes Vesak poya from a spanning request"; CI test-api green on `main` @ `11ee499`: https://github.com/shaneshaguruge/leaveflow/actions/runs/35630556232
 - [x] Supertest covers the leave-request happy path plus 400, 401, and 403, against a separate leaveflow_test database — same run, `DATABASE_URL=…/leaveflow_test`: "happy path: employee applies, sees it listed, manager approves, balance is deducted", "rejects end_date before start_date with 400", "rejects a missing token with 401", "forbids an EMPLOYEE approving a request with 403" all PASS
-- [x] The ApplyLeaveForm Vitest test passes with vitest run — `cd client && npx vitest run --reporter=verbose` → 23 passed after #43 (7 in `ApplyLeaveForm.test.jsx`; was 12 after #32, 8 before); CI test-client green: run 35587300869, and on PR #32: https://github.com/shaneshaguruge/leaveflow/actions/runs/35591444394
+- [x] The ApplyLeaveForm Vitest test passes with vitest run — `cd client && npx vitest run --reporter=verbose` → 35 passed after the Capstone (10 in `ApplyLeaveForm.test.jsx`; 23 after #43, 8 before #32); CI test-client green: run 35587300869, and on PR #32: https://github.com/shaneshaguruge/leaveflow/actions/runs/35591444394
 - [x] The Playwright apply-approve spec passes with webServer booting both apps — `npx playwright test` → 3 passed (12.6s on `feat/apply-submit-cancel`, PR #43, with the US-16, balance-after and "Submit request" steps), incl. "employee applies, manager approves, employee sees APPROVED and her balance change"; not in CI
-- [x] Five written test cases exist, and at least one bug report uses the full template — `grep -cE '^\| TC-0[0-9]' docs/test-cases.md` → 5 (TC-01…TC-05, written, not yet run by hand); `docs/bug-report-001.md` has Steps to reproduce / Expected / Actual
+- [x] Five written test cases exist, and at least one bug report uses the full template — `grep -cE '^\| TC-0[0-9]' docs/test-cases.md` → 5 (TC-01…TC-05, written and **run 2026-09-22: 5/5 pass**, not yet run by hand); `docs/bug-report-001.md` has Steps to reproduce / Expected / Actual
 - [x] You found, reported, and fixed all three seeded bugs via separate PRs — **planted by a subagent mentor** on branch `bughunt` (answer key kept outside the repo, opened only after the fixes). Found by exploratory API testing and code reading, 3 of 3 matching the key: BUG-002 overlap off-by-one (PR #46), BUG-003 manager can reject non-reports (PR #47), BUG-004 balance reserves other years' pending leave (PR #48); each with a full report (`docs/bug-report-002…004.md`) and a regression test that fails on the bug and passes with the fix; each PR merged into `bughunt` on green CI; `bughunt` never merged to main and deleted
 
 ## Phase 7 — Local Deployment (Docker) (7)

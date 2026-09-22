@@ -97,6 +97,12 @@ US-15 As an HR admin, I want to set company shutdown dates each year,
 US-16 As a manager, when reviewing a request, I want to see approved leaves from my reports that
       overlap its dates, so that I don't leave the team short-staffed.
 
+### Capstone: half-day leave and public holidays
+
+US-17…US-21 (half-day booking, half-day balance math, holiday calendar data, holiday-aware counting, HR manages
+holidays), with acceptance criteria and Nadeesha's approval, are in [`capstone/stories.md`](capstone/stories.md).
+All built (PRs #55–#59).
+
 ---
 
 ## 3. Acceptance criteria (Given / When / Then)
