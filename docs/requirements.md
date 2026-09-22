@@ -243,11 +243,8 @@ The Must list alone is a usable product.
 | Pending approvals (manager) — Lab 3 | [`wireframes/manager-approvals.jpeg`](wireframes/manager-approvals.jpeg) | US-4, US-16 ("Team that week") |
 | My requests | [`wireframes/my-requests.jpeg`](wireframes/my-requests.jpeg) | US-3, US-5, US-10 |
 | All requests (HR) | [`wireframes/hr-all-requests.jpeg`](wireframes/hr-all-requests.jpeg) | US-9, US-12 (Export CSV) |
-| Apply for leave with a half day (Capstone) | [`wireframes/apply-half-day.svg`](wireframes/apply-half-day.svg) · [PNG](wireframes/apply-half-day.png) | US-17, US-18 |
-| HR holiday list (Capstone) | [`wireframes/hr-holidays.svg`](wireframes/hr-holidays.svg) · [PNG](wireframes/hr-holidays.png) | US-21 |
-
-> The two Capstone wireframes are drawn digitally (SVG, with a PNG copy) in the same style as the paper ones; they can
-> be redrawn on paper and photographed later, replacing the PNGs.
+| Apply for leave with a half day (Capstone) | [`wireframes/apply-half-day.jpeg`](wireframes/apply-half-day.jpeg) | US-17, US-18 |
+| HR holiday list (Capstone) | [`wireframes/hr-holidays.jpeg`](wireframes/hr-holidays.jpeg) | US-21 |
 
 > The text versions below were the first drafts; the photos are the reference.
 

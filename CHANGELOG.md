@@ -69,7 +69,7 @@ staging or production environment.
 
 - #52 (18:54) Stories US-17…US-21 with acceptance criteria, approved by Nadeesha (subagent) after two rounds.
 - #53 (18:56) Mini design doc: `day_part` vs boolean, `public_holidays` (date as key), down path, API diff, ERD; ADR-10.
-- #54 (18:58) Wireframes: half-day Apply form and HR holidays (SVG + PNG).
+- #54 (18:58) Wireframes: half-day Apply form and HR holidays (SVG + PNG; replaced by paper photos on 2026-09-22).
 - #55 (19:03) Day math with half days, reserved/remaining, half-day overlap: tests committed first (red), then the code.
 - #56 (19:07) Migration 006: `day_part`, `public_holidays` seeded with the 25 holidays of 2026; `holidays.js` reads the table; written down path.
 - #57 (19:14) API: `day_part` on requests (Annual/Casual only), holiday named in refusals, AM+PM on one date, HR `/holidays` with re-credit on add.
@@ -81,6 +81,7 @@ staging or production environment.
 ## After the Capstone (2026-09-22)
 
 - #68 `docs/HOW-TO-RUN.md`: start and stop with or without Docker, quick fixes, a 5-minute demo.
+- Capstone wireframes redrawn on paper: `apply-half-day.jpeg` and `hr-holidays.jpeg` replace the SVG/PNG versions.
 - Leftovers: `npm install && npm run dev` from the repo root (`scripts/dev.js`); TC-01…TC-05 run (5/5 pass); stale docs
   fixed (security-audit counts, test cases, design and requirements pointers, Docker fix); CI pinned to `ubuntu-24.04`.
 
