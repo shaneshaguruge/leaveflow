@@ -7,6 +7,8 @@ is off that week; HR sees and exports every request and maintains the public-hol
 **Stack:** React 18 + Vite (client) · Node 24 + Express 5 (API) · PostgreSQL 16 · Docker Compose · GitHub Actions.
 Everything in this repo is demo data.
 
+**Demoing today?** Follow [`docs/HOW-TO-RUN.md`](docs/HOW-TO-RUN.md): start, stop, quick fixes and a 5-minute demo.
+
 ## Run it with Docker (recommended)
 
 ```bash
