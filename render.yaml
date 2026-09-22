@@ -1,5 +1,5 @@
-# Render Blueprint: the LeaveFlow API + PostgreSQL (free plan, Singapore). The web app is on Vercel.
-# Render → New → Blueprint → pick this repo; see docs/deploy-render.md.
+# NOT USED. Render needs a credit card, and this project is free-only: the API and database run on Vercel + Neon
+# instead (vercel.json, api/index.js, docs/deploy-vercel.md). Kept only as a record of the earlier Render plan.
 databases:
   - name: leaveflow-db
     plan: free
