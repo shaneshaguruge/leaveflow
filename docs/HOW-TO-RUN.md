@@ -1,5 +1,7 @@
 # How to run LeaveFlow (and demo it)
 
+A printable version is [`LeaveFlow-How-to-Run.pdf`](LeaveFlow-How-to-Run.pdf) (4 pages, A4).
+
 Two ways: **Docker** (normal) or **without Docker** (backup, if Docker Desktop won't start). Commands are for
 **Git Bash**.
 

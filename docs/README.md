@@ -6,7 +6,7 @@ Every project document, by Field Guide phase. **Plan** = written but not carried
 
 | Doc | What it is |
 |---|---|
-| [`HOW-TO-RUN.md`](HOW-TO-RUN.md) | Start and stop (Docker or not), logins, quick fixes, a 5-minute demo |
+| [`HOW-TO-RUN.md`](HOW-TO-RUN.md) · [PDF](LeaveFlow-How-to-Run.pdf) | Start and stop (Docker or not), logins, quick fixes, a 5-minute demo |
 | [`../README.md`](../README.md) | What LeaveFlow is, how to run it (Docker or not), demo logins, how to run the tests |
 | [`STATUS.md`](STATUS.md) | Where the project stands: done, skipped and why, next steps, known issues |
 | [`PROGRESS.md`](PROGRESS.md) | All 95 guide checkboxes with the proof for each |
