@@ -11,7 +11,8 @@ types.setTypeParser(1700, (value) => parseFloat(value));
 // `sslmode=require` (and `channel_binding`), which we turn into pg's `ssl` option with certificate checks on.
 // Local, Docker Compose and CI URLs have no sslmode, so they connect without TLS as before.
 // On Vercel each function instance is short-lived, so it keeps only a few connections (Neon's pooler does the rest).
-function poolConfig(connectionString = process.env.DATABASE_URL, env = process.env) {
+// On Vercel, use the Neon integration's pooled connection string.
+function poolConfig(connectionString = (process.env.VERCEL ? process.env.NEON_DATABASE_URL : process.env.DATABASE_URL), env = process.env) {
   const config = { connectionString };
   if (connectionString) {
     const url = new URL(connectionString);
