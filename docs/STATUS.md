@@ -7,7 +7,7 @@ https://leaveflow-lake.vercel.app — Vercel serves `client/`, the Express API r
 seed apply themselves on the first request, under an advisory lock. Deploys only through GitHub (branch → PR → checks →
 merge; Vercel builds `main`). Details and the live verification: [`deploy-vercel.md`](deploy-vercel.md).
 Everything also runs locally (Docker on :8080, or `npm run dev` on :5173).
-Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **75 done · 11 done differently · 9 not done**.
+Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **76 done · 11 done differently · 8 not done**.
 **How reviewer items are ticked:** there is no human reviewer on this project; items that need a review are ticked when the work is done — no human reviewer; self-reviewed.
 
 | Phase | Done | Done differently | Not done | Total |
@@ -22,9 +22,9 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
 | 8 CI/CD | 5 | 1 | 0 | 6 |
 | 9 Cloud Deployment | 0 | 3 | 5 | 8 |
-| 10 Production Operations | 2 | 1 | 4 | 7 |
+| 10 Production Operations | 3 | 1 | 3 | 7 |
 | Capstone (rubric 9 + checklist 8) | 15 | 2 | 0 | 17 |
-| **Total** | **75** | **11** | **9** | **95** |
+| **Total** | **76** | **11** | **8** | **95** |
 
 ## Completed
 - Phase 0: Git 2.53.0 configured (`shaneshaguruge` / `shanesha@arozentech.com`, `main`, `autocrlf=input`); Node v24.14.0; npm 11.19.1; VS Code + 4 extensions; `gh` logged in.
@@ -90,6 +90,8 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 
 - **Live on Vercel + Neon (2026-09-23, PR #73).** Verified against https://leaveflow-lake.vercel.app: `/api/health` 200 JSON; three demo logins 200 with correct roles; wrong password 401; Neon holds the migrated schema and seed (25 holidays, 4 users, 5 requests, balances); CSV export 200; employee blocked from `/api/holidays` with 403; half-day booking → 0.5 reserved → cancel → refunded; login rate limit returns 429 in production. Phase 9 items that are AWS-specific stay open; `render.yaml` is marked not used.
 
+- Production logging confirmed 2026-09-23 on the live Vercel **Logs** screen: structured pino JSON (`{"level":30,"time":…,"pid":4,…}`), requests and statuses in real time, a failed login as **401**. The tagged `logproof-…` line was not findable through log search, so request ids rest on production echoing them back (`X-Request-Id`) and redaction on the shared code path plus the local proof. Reading Vercel logs needs the dashboard (no CLI/token here).
+
 ## Skipped or blocked, and why
 - Phase 0 `ssh -T git@github.com`: not reached — key generated, not added to GitHub; HTTPS via `gh` used instead.
 - Phase 6 manual execution of TC-01…TC-05: not reached — written, marked "not run yet".
@@ -106,7 +108,7 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Phase 4–5 — [me] ask Nadeesha to confirm Q1 and R5 (HR approving own leave).
 - Phase 7 — [me] log in once in the browser at http://localhost:8080 to complete the new-machine item.
 - Phase 9 — [me] only if a card ever becomes available: the AWS path (`deploy-aws.md`) and its teardown checklist. Free hosting is done (Vercel + Neon).
-- Phase 10 — [me] read the Vercel function logs once (to claim the pino item), and reply to Nadeesha with the live link; [needs AWS] CloudWatch 5xx alarm and the snapshot restore drill; [me] ask Nadeesha whether overlapping leave should also *warn* or *block*; [me] staged incident.
+- Phase 10 — [me] reply to Nadeesha with the live link; [needs AWS] CloudWatch 5xx alarm and the snapshot restore drill; [me] ask Nadeesha whether overlapping leave should also *warn* or *block*; [me] staged incident.
 - Capstone — done: the feature is live in production through the pipeline (no staging tier exists on the free plans).
 
 ## Known issues
