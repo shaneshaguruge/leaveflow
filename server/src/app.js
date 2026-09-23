@@ -6,8 +6,9 @@ const app = express();
 // Behind a reverse proxy (nginx in compose, Render, CloudFront/App Runner) req.ip is the proxy's
 // address, so every user would share ONE login rate-limit bucket. TRUST_PROXY = the number of proxy
 // hops in front of the API. Unset (local dev) means X-Forwarded-For is ignored, so it can't be spoofed.
-if (process.env.TRUST_PROXY) {
-  const hops = process.env.TRUST_PROXY;
+// On Vercel one platform proxy sits in front of every function, so 1 hop is the default there.
+const hops = process.env.TRUST_PROXY || (process.env.VERCEL ? '1' : '');
+if (hops) {
   app.set('trust proxy', /^\d+$/.test(hops) ? Number(hops) : hops);
 }
 app.use(httpLogger);
