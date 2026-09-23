@@ -49,12 +49,13 @@ Every project document, by Field Guide phase. **Plan** = written but not carried
 |---|---|
 | [`branch-protection.md`](branch-protection.md) | The rule applied to `main` and how to re-apply or check it |
 
-## Phase 9 — Cloud (plans)
+## Phase 9 — Hosting
 
 | Doc | What it is |
 |---|---|
-| [`deploy-render.md`](deploy-render.md) | **Plan:** deploy to Render |
-| [`deploy-aws.md`](deploy-aws.md) | **Plan:** deploy to AWS (ECR, App Runner, RDS, CloudFront) |
+| [`deploy-vercel.md`](deploy-vercel.md) | **Live:** the Vercel + Neon hosting that actually runs, and its verification |
+| [`deploy-render.md`](deploy-render.md) | Not used (Render needs a card) |
+| [`deploy-aws.md`](deploy-aws.md) | Not used (AWS needs a card) |
 | [`teardown-checklist.md`](teardown-checklist.md) | **Plan:** delete every cloud resource afterwards |
 
 ## Phase 10 — Operations
