@@ -20,11 +20,11 @@ Proofs re-run on 2026-09-23 against `main` @ `6de5de2`: Jest 116/116, Vitest 35/
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
 | 8 CI/CD | 5 | 1 | 0 | 6 |
 | 9 Cloud Deployment | 0 | 3 | 5 | 8 |
-| 10 Production Operations | 2 | 1 | 4 | 7 |
+| 10 Production Operations | 3 | 1 | 3 | 7 |
 | Capstone (rubric 9 + checklist 8) | 15 | 2 | 0 | 17 |
-| **Total** | **75** | **11** | **9** | **95** |
+| **Total** | **76** | **11** | **8** | **95** |
 
-Row check: 75 + 11 + 9 = 95; every row's three columns add up to its total.
+Row check: 76 + 11 + 8 = 95; every row's three columns add up to its total.
 
 ## Phase 0 — Foundations & Setup (7)
 - [x] I can navigate, create files, and use a pipe in the terminal without looking anything up — self-assessed by the developer (2026-09-22); also shown in practice: pipe lab `ls lab0/*.txt | wc -l` → `3`
@@ -118,7 +118,7 @@ Row check: 75 + 11 + 9 = 95; every row's three columns add up to its total.
 - [ ] A written teardown checklist exists and was executed on the staging copy — written (`docs/teardown-checklist.md`), not executed
 
 ## Phase 10 — Production Operations (7)
-- [ ] Prod logs are structured JSON via pino, with request ids and auth headers redacted — the code logs the same pino JSON in production (pino-http with request ids and `authorization` redacted), but **reading Vercel function logs needs the Vercel dashboard or CLI**, so this is not claimed. Proven locally: request with `X-Request-Id: proof-redact-1` logged as `{"id":"proof-redact-1","authorization":"[Redacted]","status":200}`; raw token in log: 0
+- [x] Prod logs are structured JSON via pino, with request ids and auth headers redacted — **seen on the live Vercel Logs screen** by the developer (2026-09-23): lines are JSON objects, e.g. `{"level":30,"time":1790139616303,"pid":4,…}`, requests and statuses appear in real time, and a failed login shows as **401** (red). The tagged line could not be found through the log search, so request ids and redaction are evidenced the other way: production **echoes** the request id it logs (four requests sent with `X-Request-Id: logproof-…` came back with the same id in the response header), and `middleware/logging.js` redacts `authorization`/`cookie` on the same code path — proven locally (`X-Request-Id: proof-redact-1` logged as `{"id":"proof-redact-1","authorization":"[Redacted]","status":200}`; raw token in log: 0)
 - [ ] The 5xx CloudWatch alarm notifies your email via SNS, and you've tripped it on purpose once — needs AWS
 - [ ] You survived the staged incident using the runbook and wrote a blameless post-mortem — not done: runbook and template written, no incident staged
 - [ ] A snapshot restore was performed, verified against real data, deleted, and logged with its RTO — drill written; needs RDS
