@@ -19,12 +19,12 @@ Proofs re-run on 2026-09-23 against `main` @ `6de5de2`: Jest 116/116, Vitest 35/
 | 6 Testing & Quality | 7 | 0 | 0 | 7 |
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
 | 8 CI/CD | 5 | 1 | 0 | 6 |
-| 9 Cloud Deployment | 0 | 0 | 8 | 8 |
-| 10 Production Operations | 1 | 0 | 6 | 7 |
-| Capstone (rubric 9 + checklist 8) | 13 | 1 | 3 | 17 |
-| **Total** | **72** | **6** | **17** | **95** |
+| 9 Cloud Deployment | 0 | 3 | 5 | 8 |
+| 10 Production Operations | 2 | 1 | 4 | 7 |
+| Capstone (rubric 9 + checklist 8) | 15 | 2 | 0 | 17 |
+| **Total** | **75** | **11** | **9** | **95** |
 
-Row check: 72 + 6 + 17 = 95; every row's three columns add up to its total.
+Row check: 75 + 11 + 9 = 95; every row's three columns add up to its total.
 
 ## Phase 0 — Foundations & Setup (7)
 - [x] I can navigate, create files, and use a pipe in the terminal without looking anything up — self-assessed by the developer (2026-09-22); also shown in practice: pipe lab `ls lab0/*.txt | wc -l` → `3`
@@ -108,23 +108,23 @@ Row check: 72 + 6 + 17 = 95; every row's three columns add up to its total.
 - [x] The image with your latest merge SHA is visible under the repo's Packages — https://github.com/shaneshaguruge/leaveflow/pkgs/container/leaveflow-api (HTTP 200); latest merge `11ee499` pushed as `:11ee4994b4f7…` and `:main` (https://github.com/shaneshaguruge/leaveflow/actions/runs/35630556191); earlier `docker pull …:1bed2064e474…` and `…:main` gave the same image id `sha256:679518c5…`, and the app loads from it
 
 ## Phase 9 — Cloud Deployment (8)
-- [ ] LeaveFlow (API + client) is live on Render over HTTPS, migrations run via the shell — plan in `docs/deploy-render.md`, not deployed
+- [~] LeaveFlow (API + client) is live on Render over HTTPS, migrations run via the shell — **done differently: Vercel + Neon** (Render needs a credit card; this project is free-only). Live at https://leaveflow-lake.vercel.app: the website is Vercel static hosting from `client/`, the Express API is a Vercel function (`api/index.js`, PR #73) in the same project, and the database is a free Neon PostgreSQL 16. Migrations and the demo seed run **automatically** on the first request of each instance under an advisory lock — no shell step. Verified 2026-09-23: `/api/health` 200 JSON; all three demo logins 200 with the right roles; wrong password 401
 - [ ] AWS root user has MFA and is retired; you work as an IAM user
 - [ ] A $10 monthly budget alarm emails you — created before any resource
 - [ ] The API image is pushed to ECR in ap-south-1
 - [ ] RDS is not publicly accessible and its security group admits only App Runner
-- [ ] App Runner deploys green with health check /api/health and boot-time migrations
-- [ ] https://leave.ceylonroots.lk serves the app through CloudFront with an ACM certificate
+- [~] App Runner deploys green with health check /api/health and boot-time migrations — **done differently: Vercel + Neon**: the Vercel production build for `main` is green, `https://leaveflow-lake.vercel.app/api/health` returns `{"status":"ok",…}`, and migrations run at boot (first request per function instance, lock-protected)
+- [~] https://leave.ceylonroots.lk serves the app through CloudFront with an ACM certificate — **done differently: Vercel + Neon**: HTTPS on https://leaveflow-lake.vercel.app with Vercel's own certificate and CDN. No custom domain (none is owned) and no CloudFront/ACM
 - [ ] A written teardown checklist exists and was executed on the staging copy — written (`docs/teardown-checklist.md`), not executed
 
 ## Phase 10 — Production Operations (7)
-- [ ] Prod logs are structured JSON via pino, with request ids and auth headers redacted — no prod. Locally proven: request with `X-Request-Id: proof-redact-1` logged as `{"id":"proof-redact-1","authorization":"[Redacted]","status":200}`; raw token in log: 0
+- [ ] Prod logs are structured JSON via pino, with request ids and auth headers redacted — the code logs the same pino JSON in production (pino-http with request ids and `authorization` redacted), but **reading Vercel function logs needs the Vercel dashboard or CLI**, so this is not claimed. Proven locally: request with `X-Request-Id: proof-redact-1` logged as `{"id":"proof-redact-1","authorization":"[Redacted]","status":200}`; raw token in log: 0
 - [ ] The 5xx CloudWatch alarm notifies your email via SNS, and you've tripped it on purpose once — needs AWS
 - [ ] You survived the staged incident using the runbook and wrote a blameless post-mortem — not done: runbook and template written, no incident staged
 - [ ] A snapshot restore was performed, verified against real data, deleted, and logged with its RTO — drill written; needs RDS
 - [x] The security self-audit table is verified: params, 403s, secrets, npm audit, rate limit — re-run locally (2026-09-21): params → 26 `query(` calls (after PR #32), 0 with `${}` inside SQL; 403s → Ishara approves own, Ruwan cancels Ishara's, Ruwan approves own, Ishara → `/team/requests` all `403`; secrets → `.env` in any commit: 0, JWT secret in `git log -p`: 0; npm audit → server (all and `--omit=dev`) and client "found 0 vulnerabilities" (re-run in the 2026-09-21 audit); rate limit → 11th bad login `429 RATE_LIMITED`
-- [ ] The login endpoint returns 429 after 10 attempts/minute in prod — no prod. Locally proven: 11th bad login → `{"error":{"code":"RATE_LIMITED",…}} [429]`
-- [ ] Nadeesha's overlap feature shipped to prod through story → PR → CI → staging → release — **built up to CI, not shipped**: issue #31 → US-16 story + AC in `requirements.md` → branch `feat/team-week-view` → PR #32 (`GET /api/team/requests?from=&to=` + "Team that week" panel) → CI green (https://github.com/shaneshaguruge/leaveflow/actions/runs/35591444394). Local: Jest 43/43 (9 in `teamWeek.test.js`: 200 with overlaps for the manager, 403 for an EMPLOYEE, empty array when clear, …), Vitest 12/12 (4 in `TeamWeekPanel.test.jsx`), Playwright 3/3 (approve flow asserts "No one else is off" and Kasun Perera). **Staging and prod: not done — no deployment exists (Phase 9)**
+- [x] The login endpoint returns 429 after 10 attempts/minute in prod — verified **in production** 2026-09-23 on https://leaveflow-lake.vercel.app: twelve wrong passwords in a row returned `401` nine times, then `429 RATE_LIMITED` (the earlier successful logins in the same minute count towards the ten)
+- [~] Nadeesha's overlap feature shipped to prod through story → PR → CI → staging → release — **done differently (no staging tier)**: issue #31 → US-16 story and AC → branch → PR #32 → CI green → merged, and since 2026-09-23 it is **live in production** on https://leaveflow-lake.vercel.app (Ruwan's "Team that week" panel calls `/api/team/requests?from=&to=`). A separate staging environment does not exist on the free plans
 
 ## Capstone (17)
 Mentor rubric (9):
@@ -134,16 +134,16 @@ Mentor rubric (9):
 - [x] Day-math tests cover the edges: holidays inside ranges, weekends, half day on a boundary day, cancel refunds 0.5 — `server/tests/dayMath.test.js` (22): Vesak inside a range = 3, weekend + Medin poya = 2, half day on a poya = 0, PM half day on the last day of a range = 2.5, pending half day reserves 0.5 and cancel refunds 0.5 (#55)
 - [x] The PR is a reviewable size with a description that explains what, why, and how to test it — 8 Capstone PRs #52–#59 (+16 to +428 lines; the largest are the API and UI with their tests), each with What / Why / How to test
 - [x] CI green on the first push — or red diagnosed and fixed fast, without commenting tests out — each of #52–#59 and #66 has exactly one CI run, green; tests that imported the removed `holidays.js` were moved onto the table, not commented out (#56)
-- [ ] Deployed through the pipeline with no hand-edits on the server or in the database — not deployed: no staging or production (Phase 9). Demo data comes only from migrations; merges publish the image to GHCR
+- [x] Deployed through the pipeline with no hand-edits on the server or in the database — every change goes branch → PR → three green checks → merge to `main`, and Vercel builds `main` itself (no CLI, no uploads). The database was never touched by hand: migrations 001–006 and the demo seed applied themselves on the first request (verified through the live API on 2026-09-23)
 - [x] Scope held: the agreed stories shipped, stretch ideas parked in the backlog instead of smuggled in — parked as issues #60–#65 (half day at the start of a trip, shutdown week, employee holiday view, holiday-aware preview, audit log, displayed vs charged days); #7 team calendar and #8 email untouched
 - [x] The demo survives at least one unrehearsed question with a live answer (or an honest "I'd check X") — a reviewer subagent that had not seen the script asked about a PM half day on a newly added holiday; answered with a live run (refund 0.5, `day_part` stays PM) and pinned by a regression test; `docs/capstone/demo-script.md` (#66)
 
 Before you move on (8):
 - [x] Stories + acceptance criteria for both features written and approved by the mentor-as-customer — `docs/capstone/stories.md` US-17…US-21; Nadeesha role-played by a subagent given only her email and the requirements: round 1 changes requested (4), round 2 approved (#52) — no human reviewer; self-reviewed
 - [x] Mini design doc argues day_part vs half_day boolean, designs public_holidays, and diffs the API contract — `docs/capstone/design.md` §2 (argument), §4 (`holiday_date` PK, generated `year`), §6 (contract diff), §7 (Mermaid ERD) (#53)
-- [ ] Migration applied cleanly on a fresh database and on staging — fresh database **done** (001–006 in 526 ms, second run no-op, down/up tested, #56); **staging not done** (no staging)
+- [~] Migration applied cleanly on a fresh database and on staging — **fresh database done twice**: locally (001–006 in 526 ms, second run a no-op, down/up tested, #56) and on the **empty Neon database in production**, applied automatically on the first request (25 holidays, 4 users, 5 requests read back through the live API). **No staging tier** exists on the free plans
 - [x] Day-math unit tests written before the implementation; API tests and one E2E flow updated — all green — tests-first commit `a7baeb4` (red) before the implementation (#55); Supertest `halfDay.test.js` 16 + `holidaysApi.test.js` 11 + `holidaysTable.test.js` 7; Playwright flow books a Friday-afternoon half day (#59); Jest 110/110, Vitest 35/35, Playwright 3/3
 - [x] PR(s) reviewed and merged; CI green; main stayed deployable throughout — #52–#59, #66 merged only after lint, test-api and test-client passed; `main` green after every merge (CI and Release) — no human reviewer; self-reviewed
-- [ ] Feature live in production via the pipeline, with seed data ready for the demo — not done: no production. Seed data for the demo is ready (migrations 001–006)
+- [x] Feature live in production via the pipeline, with seed data ready for the demo — live on https://leaveflow-lake.vercel.app since 2026-09-23. Checked in production: booking Fri 27 Nov **morning** reserved 0.5 (Annual 13 → 12.5), Ruwan's card showed `AM · 0.5 days · 13 → 12.5 after`, a half day on Ill poya was refused by name, cancelling gave the 0.5 back; HR sees the 25 seeded 2026 holidays and CSV export works
 - [~] 15-minute demo delivered against the 2/8/5 structure, logs open, at least one unrehearsed question answered — **done differently (no live audience):** `docs/capstone/demo-script.md` (2/8/5, 13 steps covering every acceptance line) rehearsed twice against freshly seeded data through the API with the pino logs captured (request ids, `authorization: [Redacted]`), identical numbers both runs; one unrehearsed question answered live
 - [x] 30-minute retro with your mentor: rubric walked through line by line, one thing you'd do differently written down — `docs/capstone/retro.md`: 9 rubric lines with evidence (8 met, "deployed through the pipeline" not met) and one thing to do differently (store charged days before building re-credit) — no human reviewer; self-reviewed

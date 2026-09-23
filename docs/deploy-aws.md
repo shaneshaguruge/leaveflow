@@ -1,4 +1,8 @@
-# Deploy to AWS (Phase 9, part 2): production-shaped LeaveFlow
+# Deploy to AWS (not used)
+
+> **Status: NOT USED.** AWS needs a credit card; the app is hosted free on **Vercel + Neon**
+> ([`deploy-vercel.md`](deploy-vercel.md)). Kept as the plan for a paid future.
+ (Phase 9, part 2): production-shaped LeaveFlow
 
 > **Status: PLAN — nothing here has been created.** There is no AWS account for this project yet, and no
 > resource has been created, no sign-in done. Every command below is a plan to run later.

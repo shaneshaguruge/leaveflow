@@ -1,5 +1,7 @@
 # LeaveFlow
 
+**Live demo:** <https://leaveflow-lake.vercel.app> — website, API and database on free plans (Vercel + Neon). Logins below.
+
 Leave management for Ceylon Roots (Pvt) Ltd, a demo internship project built by following the *LeaveFlow Field Guide*.
 Employees apply for leave (full days or a morning/afternoon half day) and see their balances; managers approve or reject their team's requests and see who else
 is off that week; HR sees and exports every request and maintains the public-holiday calendar, which is never charged against anyone's balance.

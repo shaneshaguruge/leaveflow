@@ -1,5 +1,8 @@
 # How to run LeaveFlow (and demo it)
 
+> **Hosted version:** <https://leaveflow-lake.vercel.app> is live (same logins). You only need the local setup below to develop,
+> or to demo without depending on the internet.
+
 A printable version is [`LeaveFlow-How-to-Run.pdf`](LeaveFlow-How-to-Run.pdf) (4 pages, A4).
 
 Two ways: **Docker** (normal) or **without Docker** (backup, if Docker Desktop won't start). Commands are for

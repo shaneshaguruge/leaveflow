@@ -1,13 +1,13 @@
 # LeaveFlow — Status
 
-**Last updated:** 2026-09-23 · **Stopped at:** Capstone done and recorded; `main` = `6de5de2`, CI and Release green.
-**Hosting (free only — Render and AWS need a card):** the **website is live on Vercel** at
-https://leaveflow-lake.vercel.app (project `leaveflow`, Root Directory `client`), with a free **Neon** Postgres
-connected to the project. The **API is not live yet**: `/api/*` still returns the web page, so login fails on the
-hosted site. PR #73 moves the Express API into the same Vercel project as a serverless function with automatic,
-lock-protected migrations; it needs two Vercel dashboard changes first (`JWT_SECRET`, Root Directory → repo root).
-Everything works locally (Docker on :8080, or `npm run dev` on :5173).
-Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **72 done · 6 done differently · 17 not done**.
+**Last updated:** 2026-09-23 · **Stopped at:** **the app is live** at https://leaveflow-lake.vercel.app (website, API and database, free plans); `main` = `b9af7f9`, CI and Release green.
+**Hosting (free only — Render and AWS need a card):** website, API and database are live at
+https://leaveflow-lake.vercel.app — Vercel serves `client/`, the Express API runs as a Vercel function
+(`api/index.js`, PR #73) in the same project, and a free **Neon** PostgreSQL holds the data. Migrations and the demo
+seed apply themselves on the first request, under an advisory lock. Deploys only through GitHub (branch → PR → checks →
+merge; Vercel builds `main`). Details and the live verification: [`deploy-vercel.md`](deploy-vercel.md).
+Everything also runs locally (Docker on :8080, or `npm run dev` on :5173).
+Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **75 done · 11 done differently · 9 not done**.
 **How reviewer items are ticked:** there is no human reviewer on this project; items that need a review are ticked when the work is done — no human reviewer; self-reviewed.
 
 | Phase | Done | Done differently | Not done | Total |
@@ -21,10 +21,10 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 | 6 Testing & Quality | 7 | 0 | 0 | 7 |
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
 | 8 CI/CD | 5 | 1 | 0 | 6 |
-| 9 Cloud Deployment | 0 | 0 | 8 | 8 |
-| 10 Production Operations | 1 | 0 | 6 | 7 |
-| Capstone (rubric 9 + checklist 8) | 13 | 1 | 3 | 17 |
-| **Total** | **72** | **6** | **17** | **95** |
+| 9 Cloud Deployment | 0 | 3 | 5 | 8 |
+| 10 Production Operations | 2 | 1 | 4 | 7 |
+| Capstone (rubric 9 + checklist 8) | 15 | 2 | 0 | 17 |
+| **Total** | **75** | **11** | **9** | **95** |
 
 ## Completed
 - Phase 0: Git 2.53.0 configured (`shaneshaguruge` / `shanesha@arozentech.com`, `main`, `autocrlf=input`); Node v24.14.0; npm 11.19.1; VS Code + 4 extensions; `gh` logged in.
@@ -88,11 +88,13 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 
 - Checks re-run 2026-09-23 on `main` @ `6de5de2`: Jest 116/116, Vitest 35/35, Playwright 3/3, lint and build clean, `npm audit` 0 (server, client, root); CI and Release green.
 
+- **Live on Vercel + Neon (2026-09-23, PR #73).** Verified against https://leaveflow-lake.vercel.app: `/api/health` 200 JSON; three demo logins 200 with correct roles; wrong password 401; Neon holds the migrated schema and seed (25 holidays, 4 users, 5 requests, balances); CSV export 200; employee blocked from `/api/holidays` with 403; half-day booking → 0.5 reserved → cancel → refunded; login rate limit returns 429 in production. Phase 9 items that are AWS-specific stay open; `render.yaml` is marked not used.
+
 ## Skipped or blocked, and why
 - Phase 0 `ssh -T git@github.com`: not reached — key generated, not added to GitHub; HTTPS via `gh` used instead.
 - Phase 6 manual execution of TC-01…TC-05: not reached — written, marked "not run yet".
 - Phase 7 in-browser login during the new-machine test: not done by me (entering passwords in web forms is left to the user); proven through the same endpoint with curl.
-- Phase 9 Render and AWS deployment: needs AWS or Render account and a paid resource.
+- Phase 9 AWS items (IAM/MFA, budget alarm, ECR image, private RDS, teardown of a staging copy): need an AWS account and a card; the equivalent free hosting is live on Vercel + Neon instead.
 - Phase 10 CloudWatch alarm, SNS, snapshot restore drill: needs AWS account and a paid resource.
 - Phase 10 staged incident: not done — no incident has been staged.
 - Phase 10 overlap feature: staging demo and prod release not done — no deployment exists (Phase 9).
@@ -103,9 +105,9 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
 - Phase 2 — [me] add the final `201 Created` arrow (API → Browser) to the paper sequence diagram, re-photograph it and replace `docs/diagrams/sequence-diagram.jpeg` via a PR.
 - Phase 4–5 — [me] ask Nadeesha to confirm Q1 and R5 (HR approving own leave).
 - Phase 7 — [me] log in once in the browser at http://localhost:8080 to complete the new-machine item.
-- Phase 9 — [me] Render/AWS accounts with a $10 budget alarm first, then `deploy-render.md` / `deploy-aws.md`; execute the teardown checklist.
-- Phase 10 — [me] CloudWatch 5xx alarm, restore drill, ship US-16 to staging then prod (after Phase 9) and reply to Nadeesha with the live link; [me] ask Nadeesha whether overlapping leave should also *warn* or *block*; [me] staged incident.
-- Capstone — [me] once Phase 9 exists: run migration 006 on staging, demo there, then promote to production.
+- Phase 9 — [me] only if a card ever becomes available: the AWS path (`deploy-aws.md`) and its teardown checklist. Free hosting is done (Vercel + Neon).
+- Phase 10 — [me] read the Vercel function logs once (to claim the pino item), and reply to Nadeesha with the live link; [needs AWS] CloudWatch 5xx alarm and the snapshot restore drill; [me] ask Nadeesha whether overlapping leave should also *warn* or *block*; [me] staged incident.
+- Capstone — done: the feature is live in production through the pipeline (no staging tier exists on the free plans).
 
 ## Known issues
 - Docker Desktop crashed on start (21 and 22 Sep): `listening on unix://<HOME>\AppData\Local\Docker\run\dockerInference: remove …: The file cannot be accessed by the system.` Working since 2026-09-22 after the Docker Desktop update (29.8.0) with **Docker AI and Model Runner turned off** (`docker desktop disable model-runner`; `EnableDockerAI`/`EnableInference` false in `settings-store.json`). The update cleared Docker's old volumes, so the Compose database was re-seeded. A leftover folder `%LOCALAPPDATA%\Docker\run.stale-20260921` remains.

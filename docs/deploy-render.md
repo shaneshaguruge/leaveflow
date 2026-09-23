@@ -1,6 +1,10 @@
 # Deploy to Render (Phase 9, part 1)
 
-> **Status: PLAN — nothing here has been deployed.** No Render account exists for this project yet
+> **Status: NOT USED.** Render asks for a credit card, and this project is free-only. The app is hosted on
+> **Vercel + Neon** instead — see [`deploy-vercel.md`](deploy-vercel.md). `render.yaml` in the repo root is kept only
+> as a record. Nothing below was ever deployed.
+>
+> **Original note:** No Render account exists for this project yet
 > (see `STATUS.md`, "Phase 9 Render and AWS deployment: needs AWS or Render account").
 > Every step below is written to be run later; no step has been executed. When you run it, fill in
 > the "Deploy log" table at the bottom with real values.

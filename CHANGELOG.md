@@ -1,8 +1,8 @@
 # Changelog
 
 All changes, grouped by Field Guide phase. Every entry is a merged pull request (merge time in UTC) or, before PRs
-began, a direct commit. Dates come from `git log` and `gh pr list --state all`. Nothing is deployed: there is no
-staging or production environment.
+began, a direct commit. Dates come from `git log` and `gh pr list --state all`. Since 2026-09-23 the app is live at
+https://leaveflow-lake.vercel.app (Vercel + Neon, free plans); there is no separate staging environment.
 
 ## Phase 1–2 — Requirements and design (2026-09-21)
 
@@ -84,6 +84,14 @@ staging or production environment.
 - Capstone wireframes redrawn on paper: `apply-half-day.jpeg` and `hr-holidays.jpeg` replace the SVG/PNG versions.
 - Leftovers: `npm install && npm run dev` from the repo root (`scripts/dev.js`); TC-01…TC-05 run (5/5 pass); stale docs
   fixed (security-audit counts, test cases, design and requirements pointers, Docker fix); CI pinned to `ubuntu-24.04`.
+
+## Hosting — live on Vercel + Neon (2026-09-23)
+
+- #72 Vercel config for the client and a Render Blueprint (Render later dropped: it needs a card).
+- #73 The Express API as a Vercel serverless function (`api/index.js`) in the same project, Neon-ready pool (TLS from
+  the connection string), and migrations + demo seed applied automatically under `pg_advisory_xact_lock`;
+  `render.yaml` marked not used.
+- #74 Status refresh. Verified live: `/api/health`, three logins, seeded Neon data, half-day flow, 429 rate limit.
 
 ## Records
 
