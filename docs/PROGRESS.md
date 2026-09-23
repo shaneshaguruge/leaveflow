@@ -20,11 +20,11 @@ Proofs re-run on 2026-09-23 against `main` @ `6de5de2`: Jest 116/116, Vitest 35/
 | 7 Local Deployment (Docker) | 6 | 1 | 0 | 7 |
 | 8 CI/CD | 5 | 1 | 0 | 6 |
 | 9 Cloud Deployment | 0 | 3 | 5 | 8 |
-| 10 Production Operations | 3 | 1 | 3 | 7 |
+| 10 Production Operations | 3 | 2 | 2 | 7 |
 | Capstone (rubric 9 + checklist 8) | 15 | 2 | 0 | 17 |
-| **Total** | **76** | **11** | **8** | **95** |
+| **Total** | **76** | **12** | **7** | **95** |
 
-Row check: 76 + 11 + 8 = 95; every row's three columns add up to its total.
+Row check: 76 + 12 + 7 = 95; every row's three columns add up to its total.
 
 ## Phase 0 — Foundations & Setup (7)
 - [x] I can navigate, create files, and use a pipe in the terminal without looking anything up — self-assessed by the developer (2026-09-22); also shown in practice: pipe lab `ls lab0/*.txt | wc -l` → `3`
@@ -119,7 +119,7 @@ Row check: 76 + 11 + 8 = 95; every row's three columns add up to its total.
 
 ## Phase 10 — Production Operations (7)
 - [x] Prod logs are structured JSON via pino, with request ids and auth headers redacted — **seen on the live Vercel Logs screen** by the developer (2026-09-23): lines are JSON objects, e.g. `{"level":30,"time":1790139616303,"pid":4,…}`, requests and statuses appear in real time, and a failed login shows as **401** (red). The tagged line could not be found through the log search, so request ids and redaction are evidenced the other way: production **echoes** the request id it logs (four requests sent with `X-Request-Id: logproof-…` came back with the same id in the response header), and `middleware/logging.js` redacts `authorization`/`cookie` on the same code path — proven locally (`X-Request-Id: proof-redact-1` logged as `{"id":"proof-redact-1","authorization":"[Redacted]","status":200}`; raw token in log: 0)
-- [ ] The 5xx CloudWatch alarm notifies your email via SNS, and you've tripped it on purpose once — needs AWS
+- [~] The 5xx CloudWatch alarm notifies your email via SNS, and you've tripped it on purpose once — **done differently: GitHub Actions uptime check instead of CloudWatch + SNS** (Vercel's free plan has no runtime 5xx alerting: legacy Monitoring is sunset, Observability Plus and Log Drains are paid; AWS needs a card). `.github/workflows/uptime.yml` (PR #77) checks the live site every 15 minutes — `/api/health` 200 with `"status":"ok"`, the website 200, and a demo login 200 — and a failing run is the alert (GitHub emails the repo owner for failed workflows). **Tripped on purpose 2026-09-23:** healthy run https://github.com/shaneshaguruge/leaveflow/actions/runs/35828072258 (`status=200 body={"status":"ok",…}`), then a deliberate failure https://github.com/shaneshaguruge/leaveflow/actions/runs/35828151920 with annotations `Login broken — login returned 405 (expected 200)` and `API unhealthy — … did not report status ok`. The *email delivery* depends on the owner's GitHub notification settings and is confirmed by the developer, not by an automated check
 - [ ] You survived the staged incident using the runbook and wrote a blameless post-mortem — not done: runbook and template written, no incident staged
 - [ ] A snapshot restore was performed, verified against real data, deleted, and logged with its RTO — drill written; needs RDS
 - [x] The security self-audit table is verified: params, 403s, secrets, npm audit, rate limit — re-run locally (2026-09-21): params → 26 `query(` calls (after PR #32), 0 with `${}` inside SQL; 403s → Ishara approves own, Ruwan cancels Ishara's, Ruwan approves own, Ishara → `/team/requests` all `403`; secrets → `.env` in any commit: 0, JWT secret in `git log -p`: 0; npm audit → server (all and `--omit=dev`) and client "found 0 vulnerabilities" (re-run in the 2026-09-21 audit); rate limit → 11th bad login `429 RATE_LIMITED`
