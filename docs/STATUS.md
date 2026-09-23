@@ -1,6 +1,12 @@
 # LeaveFlow — Status
 
-**Last updated:** 2026-09-21 · **Stopped at:** paper wireframes committed (PR #33) and the five wireframe gaps closed (PRs #39–#43); `main` = `11ee499`, CI and Release green. Not deployed anywhere (no staging, no prod).
+**Last updated:** 2026-09-23 · **Stopped at:** Capstone done and recorded; `main` = `6de5de2`, CI and Release green.
+**Hosting (free only — Render and AWS need a card):** the **website is live on Vercel** at
+https://leaveflow-lake.vercel.app (project `leaveflow`, Root Directory `client`), with a free **Neon** Postgres
+connected to the project. The **API is not live yet**: `/api/*` still returns the web page, so login fails on the
+hosted site. PR #73 moves the Express API into the same Vercel project as a serverless function with automatic,
+lock-protected migrations; it needs two Vercel dashboard changes first (`JWT_SECRET`, Root Directory → repo root).
+Everything works locally (Docker on :8080, or `npm run dev` on :5173).
 Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide: **72 done · 6 done differently · 17 not done**.
 **How reviewer items are ticked:** there is no human reviewer on this project; items that need a review are ticked when the work is done — no human reviewer; self-reviewed.
 
@@ -79,6 +85,8 @@ Checklist view: [`PROGRESS.md`](PROGRESS.md) — **95** checkboxes in the guide:
   - The half-day → approve → −0.5 → holiday → CSV flow checked through http://localhost:8080 (test data removed).
   - Stale docs fixed: security-audit counts, test cases, design and requirements pointers.
   - CI pinned to `ubuntu-24.04`.
+
+- Checks re-run 2026-09-23 on `main` @ `6de5de2`: Jest 116/116, Vitest 35/35, Playwright 3/3, lint and build clean, `npm audit` 0 (server, client, root); CI and Release green.
 
 ## Skipped or blocked, and why
 - Phase 0 `ssh -T git@github.com`: not reached — key generated, not added to GitHub; HTTPS via `gh` used instead.

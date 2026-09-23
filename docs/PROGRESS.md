@@ -4,7 +4,7 @@ Every "Before you move on" checkbox in the guide (**95** in total: 78 in Phases 
 guide's own words. `[x]` done and verified by running it · `[~]` done differently from the guide (reason given) ·
 `[ ]` not done. There is no human reviewer on this project: items that need a review are ticked once the work is
 done and marked "no human reviewer; self-reviewed" (see `STATUS.md`).
-Proofs for Phases 6, 7, 8 and 10 were re-run on 2026-09-21; the Docker (Phase 7) and branch-protection (Phase 8) items against `main` @ `7ae5945`. Details: [`STATUS.md`](STATUS.md).
+Proofs re-run on 2026-09-23 against `main` @ `6de5de2`: Jest 116/116, Vitest 35/35, Playwright 3/3, lint, build and `npm audit` clean. Phase 9 stays open: the website is on Vercel but the hosted API is not live yet (PR #73). Details: [`STATUS.md`](STATUS.md).
 
 ## Summary
 
