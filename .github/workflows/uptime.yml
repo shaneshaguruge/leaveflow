@@ -1,0 +1,63 @@
+# Free stand-in for a CloudWatch 5xx alarm + SNS email (Phase 10): a scheduled health check of the live site.
+# A failing run marks the commit red and GitHub emails the repo owner ("Notifications for failed workflows only"),
+# which is the alert. Run it by hand from the Actions tab to test it, optionally against another URL.
+name: Uptime
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # every 15 minutes (GitHub may delay a scheduled run under load)
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL to check (leave empty for production)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check the API health endpoint and the website
+        env:
+          BASE: ${{ github.event.inputs.base_url || 'https://leaveflow-lake.vercel.app' }}
+        run: |
+          fail=0
+
+          echo "checking $BASE/api/health"
+          code=$(curl -sS -o body.json -w '%{http_code}' --max-time 30 "$BASE/api/health" || echo 000)
+          body=$(cat body.json 2>/dev/null | head -c 300)
+          echo "  status=$code body=$body"
+          if [ "$code" != "200" ]; then
+            echo "::error title=API unhealthy::$BASE/api/health returned $code (expected 200) — body: $body"
+            fail=1
+          elif ! grep -q '"status":"ok"' body.json; then
+            echo "::error title=API unhealthy::$BASE/api/health did not report status ok — body: $body"
+            fail=1
+          fi
+
+          echo "checking $BASE/"
+          code=$(curl -sS -o page.html -w '%{http_code}' --max-time 30 "$BASE/" || echo 000)
+          echo "  status=$code"
+          if [ "$code" != "200" ]; then
+            echo "::error title=Website down::$BASE/ returned $code (expected 200)"
+            fail=1
+          fi
+
+          echo "checking a login (demo account, no token printed)"
+          code=$(curl -sS -o login.json -w '%{http_code}' --max-time 30 -X POST "$BASE/api/auth/login" \
+            -H 'Content-Type: application/json' \
+            -d '{"email":"ishara@ceylonroots.lk","password":"password123"}' || echo 000)
+          echo "  status=$code"
+          if [ "$code" != "200" ]; then
+            echo "::error title=Login broken::login returned $code (expected 200) — the database or JWT_SECRET may be wrong"
+            fail=1
+          fi
+
+          if [ "$fail" != "0" ]; then
+            echo "health check FAILED — this run is the alert"
+            exit 1
+          fi
+          echo "all checks passed"
