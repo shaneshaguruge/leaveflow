@@ -54,6 +54,7 @@ Every project document, by Field Guide phase. **Plan** = written but not carried
 | Doc | What it is |
 |---|---|
 | [`deploy-vercel.md`](deploy-vercel.md) | **Live:** the Vercel + Neon hosting that actually runs, and its verification |
+| [`deployment-and-cli.md`](deployment-and-cli.md) | How GitHub, Vercel and Neon are connected; how git and `gh` authenticate here; the Vercel CLI as reference only |
 | [`deploy-render.md`](deploy-render.md) | Not used (Render needs a card) |
 | [`deploy-aws.md`](deploy-aws.md) | Not used (AWS needs a card) |
 | [`teardown-checklist.md`](teardown-checklist.md) | **Plan:** delete every cloud resource afterwards |

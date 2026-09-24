@@ -92,6 +92,7 @@ https://leaveflow-lake.vercel.app (Vercel + Neon, free plans); there is no separ
   the connection string), and migrations + demo seed applied automatically under `pg_advisory_xact_lock`;
   `render.yaml` marked not used.
 - #74 Status refresh. Verified live: `/api/health`, three logins, seeded Neon data, half-day flow, 429 rate limit.
+- `docs/deployment-and-cli.md`: how the GitHub → Vercel → Neon connection works, how git/`gh` authenticate on the dev PC, the Vercel CLI documented as optional (never for real deploys), and read-only health checks.
 
 ## Records
 
